@@ -8,7 +8,6 @@ from simples3.streaming import StreamingS3Bucket
 
 
 ################################
-
 #  S3 Storage Object
 ################################
 
