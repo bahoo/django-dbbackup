@@ -45,10 +45,10 @@ you can follow the required setup below.
 
 SETUP YOUR DJANGO PROJECT
 -------------------------
-1. Install django-dbbackup and the required simples3 dependancy:
+1. Install django-dbbackup and the required boto dependancy:
    >> cd django-dbbackup
    >> python setup.py install
-   >> pip install simples3
+   >> pip install boto
 
 2. Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
 
