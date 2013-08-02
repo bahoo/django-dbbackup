@@ -24,7 +24,7 @@ class Storage(BaseStorage):
     """ Dropbox API Storage. """
     name = 'Dropbox'
     TOKENS_FILEPATH = getattr(settings, 'DBBACKUP_TOKENS_FILEPATH', None)
-    DROPBOX_DIRECTORY = getattr(settings, 'DBBACKUP_DROPBOX_DIRECTORY', "/django-dbbackups/")
+    DROPBOX_DIRECTORY = getattr(settings, 'DBBACKUP_DROPBOX_DIRECTORY', "")
     DROPBOX_DIRECTORY = '/%s/' % DROPBOX_DIRECTORY.strip('/')
     DBBACKUP_DROPBOX_APP_KEY = getattr(settings, 'DBBACKUP_DROPBOX_APP_KEY', None)
     DBBACKUP_DROPBOX_APP_SECRET = getattr(settings, 'DBBACKUP_DROPBOX_APP_SECRET', None)
