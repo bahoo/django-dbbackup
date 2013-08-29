@@ -331,7 +331,11 @@ DBBACKUP_CLEANUP_KEEP (optional)
     keeping 10 + the first backup of each month.
 
 DBBACKUP_GPG_RECIPIENT (optional)
-    The name of the key that is used for encryption. This setting is only used when making a backup with the --encrypt opton.
+    The name of the key that is used for encryption. This setting is only used when making a backup with the --encrypt option.
+
+DBBACKUP_GPG_ALWAYS_TRUST (optional)
+    Always trust the gpg key (True), or not (False). The default value is False.
+    This setting is only used when making a backup with the --encrypt option.
 
 DBBACKUP_MEDIA_PATH (optional)
     The path that will be backed up by the 'backup_media' command. If this option is not set, then the MEDIA_ROOT setting is used.

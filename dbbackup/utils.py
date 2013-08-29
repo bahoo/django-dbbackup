@@ -89,8 +89,10 @@ def encrypt_file(input_file):
         try:
             input_file.seek(0)
 
+            always_trust = getattr(settings, 'DBBACKUP_GPG_ALWAYS_TRUST', False)
+
             g = gnupg.GPG()
-            result = g.encrypt_file(input_file, output=temp_filename, recipients=settings.DBBACKUP_GPG_RECIPIENT)
+            result = g.encrypt_file(input_file, output=temp_filename, recipients=settings.DBBACKUP_GPG_RECIPIENT, always_trust=always_trust)
             input_file.close()
 
             if not result:
