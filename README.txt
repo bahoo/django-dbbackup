@@ -214,6 +214,12 @@ different user to perform the admin commands dropdb, createdb as a different
 user from the one django uses to connect.  If you need more fine grain control
 you might consider fully customizing the admin commands.
 
+FORCE_ENGINE (optional)
+    By default, this app will look at DATABASES['default']['ENGINE'] to determine
+    if you are using MySQL, Postgres, or SQLite.  If you want to skip this check
+    and force the app to use one of the three, set this value to onw of: mysql,
+    postgres, or sqlite.
+
 
 MYSQL
 -----

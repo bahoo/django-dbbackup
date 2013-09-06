@@ -8,15 +8,14 @@ import shlex
 from datetime import datetime
 from shutil import copyfileobj
 from subprocess import Popen
-
 from django.conf import settings
 from django.core.management.base import CommandError
-
 
 READ_FILE = '<READ_FILE>'
 WRITE_FILE = '<WRITE_FILE>'
 DATE_FORMAT = getattr(settings, 'DBBACKUP_DATE_FORMAT', '%Y-%m-%d-%H%M%S')
 SERVER_NAME = getattr(settings, 'DBBACKUP_SERVER_NAME', '')
+FORCE_ENGINE = getattr(settings, 'FORCE_ENGINE', '')
 FILENAME_TEMPLATE = getattr(settings, 'DBBACKUP_FILENAME_TEMPLATE', '{databasename}-{servername}-{datetime}.{extension}')
 
 
@@ -174,16 +173,16 @@ class DBCommands:
 
     def __init__(self, database):
         self.database = database
-        self.engine = self.database['ENGINE'].split('.')[-1]
+        self.engine = FORCE_ENGINE or self.database['ENGINE'].split('.')[-1]
         self.settings = self._get_settings()
 
     def _get_settings(self):
         """ Returns the proper settings dictionary. """
-        if self.engine == 'mysql':
+        if any(e in self.engine for e in ('mysql')):
             return MySQLSettings(self.database)
-        elif self.engine in ('postgresql_psycopg2', 'postgis'):
+        elif any(e in self.engine for e in ('postgres', 'postgis')):
             return PostgreSQLSettings(self.database)
-        elif self.engine == 'sqlite3':
+        elif any(e in self.engine for e in ('sqlite')):
             return SQLiteSettings(self.database)
 
     def _clean_passwd(self, instr):
