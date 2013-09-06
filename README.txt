@@ -16,13 +16,13 @@ valid backup file.
 
 MANAGEMENT COMMANDS
 -------------------
-DBBackup  - Backup your database to the specified storage. By default this
+dbbackup  - Backup your database to the specified storage. By default this
             will backup all databases specified in your settings.py file and
             will not delete any old backups. You can optionally specify a
             server name to be included in the backup filename.
             >> dbbackup [-s <servername>] [-d <database>] [--clean] [--compress] [--encrypt]
 
-DBRestore - Restore your database from the specified storage. By default this
+dbrestore - Restore your database from the specified storage. By default this
             will lookup the latest backup and restore from that. You may
             optionally specify a servername if you you want to backup a
             database image that was created from a different server. You may
@@ -331,19 +331,21 @@ DBBACKUP_CLEANUP_KEEP (optional)
     keeping 10 + the first backup of each month.
 
 DBBACKUP_GPG_RECIPIENT (optional)
-    The name of the key that is used for encryption. This setting is only used when making a backup with the --encrypt option.
+    The name of the key that is used for encryption. This setting is only used
+    when making a backup with the --encrypt option.
 
 DBBACKUP_GPG_ALWAYS_TRUST (optional)
     Always trust the gpg key (True), or not (False). The default value is False.
     This setting is only used when making a backup with the --encrypt option.
 
 DBBACKUP_MEDIA_PATH (optional)
-    The path that will be backed up by the 'backup_media' command. If this option is not set, then the MEDIA_ROOT setting is used.
+    The path that will be backed up by the 'backup_media' command. If this option
+    is not set, then the MEDIA_ROOT setting is used.
 
 
-============
- ENCRYPTION
-============
+=====================
+ ENCRYPTION SETTINGS
+=====================
 
 You can encrypt a backup with the --encrypt option. The backup is done using gpg.
     >> python manage.py dbbackup --encrypt
@@ -353,3 +355,11 @@ Requirements:
     >> pip install python-gnupg
 - You need gpg key.
 - Set the setting 'DBBACKUP_GPG_RECIPIENT' to the name of the gpg key.
+
+DBBACKUP_GPG_RECIPIENT (required)
+    Name of the gpg key used for encryption.
+
+DBBACKUP_GPG_ALWAYS_TRUST (optional)
+    The encryption of the backup file fails if gpg does not trust the public
+    encryption key. The solution is to set the option 'trust-model' to 'always'.
+    By default this value is False.  Set this to True to enable this option.
