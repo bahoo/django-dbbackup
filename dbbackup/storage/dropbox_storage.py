@@ -72,7 +72,7 @@ class Storage(BaseStorage):
         return sorted(filepaths)
 
     def get_numbered_path(self, path, number):
-        return "{}.{}".format(path, number)
+        return "{0}.{1}".format(path, number)
 
     @staticmethod
     def chunked_file(filehandle, chunk_size=FILE_SIZE_LIMIT):
