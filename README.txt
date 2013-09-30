@@ -199,6 +199,40 @@ DBBACKUP_FILESYSTEM_DIRECTORY (required)
     The directory on your local system you wish to save your backups.
 
 
+========================
+ DBBackup to FTP
+========================
+
+To store your database backups on the remote filesystem via FTP, simply setup the
+required settings below.
+
+SETUP YOUR DJANGO PROJECT
+-------------------------
+1. Install django-dbbackup application:
+   >> cd django-dbbackup
+   >> python setup.py install
+
+2. Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
+
+3. Include the required settings below.
+   DBBACKUP_STORAGE = 'dbbackup.storage.ftp_storage'
+   DBBACKUP_FTP_HOST = 'ftp.host'
+   DBBACKUP_FTP_USER = 'user, blank if anonymous'
+   DBBACKUP_FTP_PASSWORD = 'password, can be blank'
+   DBBACKUP_FTP_PATH = 'path, blank for default'
+
+4. Now you're ready to use the backup management commands.
+
+
+AVAILABLE SETTINGS
+------------------
+DBBACKUP_FTP_HOST (required)
+    Hostname for the server you wish to save your backups.
+DBBACKUP_FTP_USER, DBBACKUP_FTP_PASSWORD
+    FTP authorization credentionals. Skip for anonymous FTP.
+DBBACKUP_FTP_PATH
+    The directory on remote FTP server you wish to save your backups.
+
 
 ===================
  DATABASE SETTINGS
