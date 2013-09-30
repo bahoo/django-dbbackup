@@ -1,6 +1,3 @@
-manage.py
-venv
-testproj
 syntax: glob
 *.pyc
 *.db

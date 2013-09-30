@@ -58,6 +58,7 @@ class Command(LabelCommand):
         output_file = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
         output_file.name = self.dbcommands.filename(self.servername)
         self.dbcommands.run_backup_commands(output_file)
+
         if self.compress:
             compressed_file = self.compress_file(output_file)
             output_file.close()
@@ -76,6 +77,7 @@ class Command(LabelCommand):
         DBBACKUP_CLEANUP_KEEP and any backups that occur on first of the month.
         """
         if self.clean:
+            print "Cleaning Old Backups for: %s" % database['NAME']
             filepaths = self.storage.list_directory()
             filepaths = self.dbcommands.filter_filepaths(filepaths)
             for filepath in sorted(filepaths[0:-CLEANUP_KEEP]):
