@@ -109,7 +109,7 @@ class Command(BaseCommand):
         if server_name:
             server_name = '-%s' % server_name
 
-        media_re = re.compile(r'%s%s-(.*)\.media\.tar\.gz' % (self.get_databasename(), server_name))
+        media_re = re.compile(r'^%s%s-(.*)\.media\.tar\.gz' % (self.get_databasename(), server_name))
 
         def is_media_backup(filename):
             return media_re.search(filename)

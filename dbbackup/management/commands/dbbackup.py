@@ -81,7 +81,7 @@ class Command(LabelCommand):
             filepaths = self.storage.list_directory()
             filepaths = self.dbcommands.filter_filepaths(filepaths)
             for filepath in sorted(filepaths[0:-CLEANUP_KEEP]):
-                regex = self.dbcommands.filename_match(self.servername, '(.*?)')
+                regex = r'^%s' % self.dbcommands.filename_match(self.servername, '(.*?)')
                 datestr = re.findall(regex, filepath)[0]
                 dateTime = datetime.datetime.strptime(datestr, DATE_FORMAT)
                 if int(dateTime.strftime("%d")) != 1:

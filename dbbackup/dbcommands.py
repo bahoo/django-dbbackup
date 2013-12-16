@@ -215,8 +215,8 @@ class DBCommands:
 
     def filter_filepaths(self, filepaths, servername=None):
         """ Returns a list of backups file paths from the dropbox entries. """
-        regex = self.filename_match(servername, '.*?')
-        return filter(lambda path: re.search(regex, path), filepaths)
+        regex = r'^%s' % self.filename_match(servername, '.*?')
+        return filter(lambda path: re.match(regex, path), filepaths)
 
     def translate_command(self, command):
         """ Translate the specified command. """
