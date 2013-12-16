@@ -26,7 +26,9 @@ class Storage(BaseStorage):
     S3_DOMAIN = getattr(settings, 'DBBACKUP_S3_DOMAIN', 's3.amazonaws.com')
     S3_IS_SECURE = getattr(settings, 'DBBACKUP_S3_USE_SSL', True)
     S3_DIRECTORY = getattr(settings, 'DBBACKUP_S3_DIRECTORY', "django-dbbackups/")
-    S3_DIRECTORY = '%s/' % S3_DIRECTORY.strip('/')
+
+    if S3_DIRECTORY:
+        S3_DIRECTORY = '%s/' % S3_DIRECTORY.strip('/')
 
     def __init__(self, server_name=None):
         self._check_filesystem_errors()
