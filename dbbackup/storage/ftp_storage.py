@@ -25,10 +25,12 @@ class Storage(BaseStorage):
     FTP_PASSWORD = getattr(settings, 'DBBACKUP_FTP_PASSWORD', None)
     FTP_PATH = getattr(settings, 'DBBACKUP_FTP_PATH', ".")
     FTP_PATH = '/%s/' % FTP_PATH.strip('/')
+    FTP_PASSIVE_MODE = getattr(settings, 'DBBACKUP_FTP_PASSIVE_MODE', False)
 
     def __init__(self, server_name=None):
         self._check_settings()
         self.ftp = FTP(self.FTP_HOST, self.FTP_USER, self.FTP_PASSWORD)
+        self.ftp.set_pasv(self.FTP_PASSIVE_MODE)
         BaseStorage.__init__(self)
 
     def _check_settings(self):
