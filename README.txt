@@ -117,7 +117,7 @@ SETUP YOUR DJANGO PROJECT
    using Pip, you can install this package using the following command:
    >> cd django-dbbackup
    >> python setup.py install
-   >> pip install hg+https://bitbucket.org/dropboxapi/dropbox-client-python
+   >> pip install dropbox
 
 2. Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
 
