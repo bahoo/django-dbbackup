@@ -98,7 +98,11 @@ class Command(LabelCommand):
         zipfile = gzip.GzipFile(fileobj=outputfile, mode="wb")
         try:
             input_file.seek(0)
-            zipfile.write(input_file.read())
+            chunk_size = 256 * 1024 * 1024
+            chunk = input_file.read(chunk_size)
+            while chunk:
+                zipfile.write(chunk)
+                chunk = input_file.read(chunk_size)
         finally:
             zipfile.close()
 
