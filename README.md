@@ -12,28 +12,30 @@ attempt to run this command if you are not sure that you already have a
 valid backup file.
 
 
-## <u>MANAGEMENT COMMANDS</u> ##
+## MANAGEMENT COMMANDS ##
 
 **dbbackup** - Backup your database to the specified storage. By default this
 will backup all databases specified in your settings.py file and will not
 delete any old backups. You can optionally specify a server name to be included
 in the backup filename.
-   > dbbackup [-s <servername>] [-d <database>] [--clean] [--compress] [--encrypt]
+
+    dbbackup [-s <servername>] [-d <database>] [--clean] [--compress] [--encrypt]
 
 **dbrestore** - Restore your database from the specified storage. By default
 this will lookup the latest backup and restore from that. You may optionally
 specify a servername if you you want to backup a database image that was
 created from a different server. You may also specify an explicit local file to
 backup from.
-   > dbrestore [-d <database>] [-s <servername>] [-f <localfile>]
+
+    dbrestore [-d <database>] [-s <servername>] [-f <localfile>]
 
 **backup_media** - Backup media files. Default this will backup the files in
 the MEDIA_ROOT. Optionally you can set the DBBACKUP_MEDIA_PATH setting.
-   > backup_media [--encrypt] [--clean] [--servername <servername>]
 
-<br/>
+    backup_media [--encrypt] [--clean] [--servername <servername>]
 
-## <u>DBBackup to Amazon S3</u> ##
+
+## DBBackup to Amazon S3 ##
 
 In order to backup to Amazon S3, you'll first need to create an Amazon
 Webservices Account and setup your Amazon S3 bucket. Once that is complete,
@@ -42,20 +44,22 @@ you can follow the required setup below.
 
 ### SETUP YOUR DJANGO PROJECT ###
 
-1. Install django-dbbackup and the required boto dependancy:
-   > cd django-dbbackup<br/>
-   > python setup.py install<br/>
-   > pip install boto
+1.) Install django-dbbackup and the required boto dependancy:
 
-2. Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
+    cd django-dbbackup
+    python setup.py install
+    pip install boto
 
-3. Include the required settings below.
-   > DBBACKUP_STORAGE = 'dbbackup.storage.s3_storage'<br/>
-   > DBBACKUP_S3_BUCKET = '&lt;amazon_bucket_name&gt;'<br/>
-   > DBBACKUP_S3_ACCESS_KEY = '&lt;amazon_access_key&gt;'<br/>
-   > DBBACKUP_S3_SECRET_KEY = '&lt;amazon_secret_key&gt;'
+2.) Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
 
-4. Now you're ready to use the backup management commands.
+3.) Include the required settings below.
+
+    DBBACKUP_STORAGE = 'dbbackup.storage.s3_storage'
+    DBBACKUP_S3_BUCKET = '&lt;amazon_bucket_name&gt;'
+    DBBACKUP_S3_ACCESS_KEY = '&lt;amazon_access_key&gt;'
+    DBBACKUP_S3_SECRET_KEY = '&lt;amazon_secret_key&gt;'
+
+4.) Now you're ready to use the backup management commands.
 
 
 ### AVAILABLE SETTINGS ###
@@ -85,9 +89,8 @@ you can follow the required setup below.
 **DBBACKUP_S3_IS_SECURE (optional)** -
    Set False to disable using SSL. Default is True.
 
-<br/>
 
-## <u>DBBackup to Dropbox</u> ##
+## DBBackup to Dropbox ##
 
 In order to backup to Dropbox, you'll first need to create a Dropbox Account
 and set it up to communicate with the Django-DBBackup application. Don't
@@ -96,8 +99,7 @@ worry, all instructions are below.
 
 ### SETUP YOUR DROPBOX ACCOUNT ###
 
-1. Login to Dropbox and navigate to Developers » MyApps.<br/>
-   [https://www.dropbox.com/developers/start/setup#python](https://www.dropbox.com/developers/start/setup#python)
+1. Login to Dropbox and navigate to Developers » MyApps. [https://www.dropbox.com/developers/start/setup#python](https://www.dropbox.com/developers/start/setup#python)
 
 2. Click the button to create a new app and name it whatever you like. For
    reference, I named mine 'Website Backups'.
@@ -108,21 +110,23 @@ worry, all instructions are below.
 
 ### SETUP YOUR DJANGO PROJECT ###
 
-1. Install django-dbbackup and the required Python Dropbox Client API. If
+1.) Install django-dbbackup and the required Python Dropbox Client API. If
    using Pip, you can install this package using the following command:
-   > cd django-dbbackup<br/>
-   > python setup.py install<br/>
-   > pip install dropbox
+   
+    cd django-dbbackup
+    python setup.py install
+    pip install dropbox
 
-2. Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
+2.) Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
 
-3. Include the required settings below.
-   > DBBACKUP_STORAGE = 'dbbackup.storage.dropbox_storage'<br/>
-   > DBBACKUP_TOKENS_FILEPATH = '<local_tokens_filepath>'<br/>
-   > DBBACKUP_DROPBOX_APP_KEY = '<dropbox_app_key>'<br/>
-   > DBBACKUP_DROPBOX_APP_SECRET = '<dropbox_app_secret>'
+3.) Include the required settings below.
 
-4. Now you're ready to use the backup management commands. The first time you
+    DBBACKUP_STORAGE = 'dbbackup.storage.dropbox_storage'
+    DBBACKUP_TOKENS_FILEPATH = '<local_tokens_filepath>'
+    DBBACKUP_DROPBOX_APP_KEY = '<dropbox_app_key>'
+    DBBACKUP_DROPBOX_APP_SECRET = '<dropbox_app_secret>'
+
+4.) Now you're ready to use the backup management commands. The first time you
    run a command you'll be prompted to visit a Dropbox URL to allow DBBackup
    access to your Dropbox account.
 
@@ -153,9 +157,8 @@ worry, all instructions are below.
    The directory in Dropbox you wish to save your backups. By default this is
    set to '/django-dbbackups/'.
 
-<br/>
 
-## <u>DBBackup to Local Disk</u> ##
+## DBBackup to Local Disk ##
 
 To store your database backups on the local filesystem, simply setup the
 required settings below. Storing backups to local disk may also be useful for
@@ -165,17 +168,19 @@ system.
 
 ### SETUP YOUR DJANGO PROJECT ###
 
-1. Install django-dbbackup application:
-   > cd django-dbbackup<br/>
-   > python setup.py install
+1.) Install django-dbbackup application:
 
-2. Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
+    cd django-dbbackup
+    python setup.py install
 
-3. Include the required settings below.
-   > DBBACKUP_STORAGE = 'dbbackup.storage.filesystem_storage'<br/>
-   > DBBACKUP_FILESYSTEM_DIRECTORY = '<local_directory_path>'
+2.) Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
 
-4. Now you're ready to use the backup management commands.
+3.) Include the required settings below.
+
+    DBBACKUP_STORAGE = 'dbbackup.storage.filesystem_storage'
+    DBBACKUP_FILESYSTEM_DIRECTORY = '<local_directory_path>'
+
+4.) Now you're ready to use the backup management commands.
 
 
 ### AVAILABLE SETTINGS ###
@@ -183,29 +188,30 @@ system.
 **DBBACKUP_FILESYSTEM_DIRECTORY (required)** -
    The directory on your local system you wish to save your backups.
 
-<br/>
 
-## <u>DBBackup to FTP</u> ##
+## DBBackup to FTP ##
 
 To store your database backups on the remote filesystem via FTP, simply setup the
 required settings below.
 
 ### SETUP YOUR DJANGO PROJECT ###
 
-1. Install django-dbbackup application:
-   > cd django-dbbackup<br/>
-   > python setup.py install
+1.) Install django-dbbackup application:
 
-2. Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
+    cd django-dbbackup
+    python setup.py install
 
-3. Include the required settings below.
-   > DBBACKUP_STORAGE = 'dbbackup.storage.ftp_storage'<br/>
-   > DBBACKUP_FTP_HOST = 'ftp.host'<br/>
-   > DBBACKUP_FTP_USER = 'user, blank if anonymous'<br/>
-   > DBBACKUP_FTP_PASSWORD = 'password, can be blank'<br/>
-   > DBBACKUP_FTP_PATH = 'path, blank for default'
+2.) Add 'dbbackup' to INSTALLED_APPS in your settings.py file.
 
-4. Now you're ready to use the backup management commands.
+3.) Include the required settings below.
+
+    DBBACKUP_STORAGE = 'dbbackup.storage.ftp_storage'
+    DBBACKUP_FTP_HOST = 'ftp.host'
+    DBBACKUP_FTP_USER = 'user, blank if anonymous'
+    DBBACKUP_FTP_PASSWORD = 'password, can be blank'
+    DBBACKUP_FTP_PATH = 'path, blank for default'
+
+4.) Now you're ready to use the backup management commands.
 
 
 ### AVAILABLE SETTINGS ###
@@ -219,9 +225,8 @@ required settings below.
 **DBBACKUP_FTP_PATH** -
    The directory on remote FTP server you wish to save your backups.
 
-<br/>
 
-## <u>DATABASE SETTINGS</u> ##
+## DATABASE SETTINGS ##
 
 The following databases are supported by this application. You can customize
 the commands used for backup and the resulting filenames with the following
@@ -249,13 +254,15 @@ you might consider fully customizing the admin commands.
    List of commands to use execute when creating a backup. Commands are sent
    to popen and should be split into shlex tokens. By default, the following
    command is run:
-   > mysqldump --user={adminuser} --password={password} --host={host} --port={port} {databasename} >
+
+    mysqldump --user={adminuser} --password={password} --host={host} --port={port} {databasename} >
 
 **DBBACKUP_MYSQL_RESTORE_COMMANDS (optional)** -
    List of commands to use execute when creating a backup. Commands are sent
    to popen and should be split into shlex tokens. By default, the following
    command is run:
-   > mysql --user={adminuser} --password={password} --host={host} --port={port} {databasename} <
+
+    mysql --user={adminuser} --password={password} --host={host} --port={port} {databasename} <
 
 
 ### POSTGRES ###
@@ -267,15 +274,17 @@ you might consider fully customizing the admin commands.
    List of commands to use execute when creating a backup. Commands are sent
    to popen and should be split into shlex tokens. By default, the following
    command is run:
-   > pg_dump --username={adminuser} --host={host} --port={port} {databasename} >
+
+    pg_dump --username={adminuser} --host={host} --port={port} {databasename} >
 
 **DBBACKUP_POSTGRES_RESTORE_COMMANDS (optional)** -
    List of commands to use execute when restoring a backup. Commands are sent
    to popen and should be split into shlex tokens. By default, the following
    commands are run:
-   > dropdb --username={adminuser} --host={host} --port={port} {databasename}<br/>
-   > createdb --username={adminuser} --host={host} --port={port} --owner={username} {databasename}<br/>
-   > psql --username={adminuser} --host={host} --port={port} --single-transaction {databasename} <
+
+    dropdb --username={adminuser} --host={host} --port={port} {databasename}
+    createdb --username={adminuser} --host={host} --port={port} --owner={username} {databasename}
+    psql --username={adminuser} --host={host} --port={port} --single-transaction {databasename} <
 
 
 ### SQLITE ###
@@ -287,34 +296,34 @@ you might consider fully customizing the admin commands.
    List of commands to use execute when creating a backup. Commands are sent to
    popen and should be split into shlex tokens. By default, the following
    command is run:
-   > [READ_FILE, '{databasename}']
+   
+    [READ_FILE, '{databasename}']
 
 **DBBACKUP_SQLITE_RESTORE_COMMANDS (optional)** -
    List of commands to use execute when restoring a backup. Commands are sent
    to popen and should be split into shlex tokens. By default, the following
    command is run:
-   > [WRITE_FILE, '{databasename}']
+   
+    [WRITE_FILE, '{databasename}']
 
-<br/>
 
-## <u>DEFINING BACKUP COMMANDS</u> ##
+## DEFINING BACKUP COMMANDS ##
 
 When creating backup or restore commands, there are a few template variables
 you can use in the commands (listed below). Also note, ending a command with >
 or < will pipe the file contents from or to the command respectively.
 
-   > {databasename}: Name of the database from settings.py<br/>
-   > {servername}: Optional SERVER_NAME setting in settings.py<br/>
-   > {datetime}: Current datetime string (see DBBACKUP_DATE_FORMAT).<br/>
-   > {extension}: File extension for the current database.
+    {databasename}: Name of the database from settings.py
+    {servername}: Optional SERVER_NAME setting in settings.py
+    {datetime}: Current datetime string (see DBBACKUP_DATE_FORMAT).
+    {extension}: File extension for the current database.
 
 There are also two special commands READ_FILE and WRITE_FILE which take the
 form of a two-item list, the second item being the file to read or write.
 Please see the SQLite settings above for reference.
 
-<br/>
 
-## <u>GLOBAL SETTINGS</u> ##
+## GLOBAL SETTINGS ##
 
 **DBBACKUP_STORAGE (required)** -
    String pointing to django-dbbackup location module to use when performing a
@@ -364,12 +373,12 @@ Please see the SQLite settings above for reference.
    The path that will be backed up by the 'backup_media' command. If this option
    is not set, then the MEDIA_ROOT setting is used.
 
-<br/>
 
-## <u>ENCRYPTION SETTINGS</u> ##
+## ENCRYPTION SETTINGS ##
 
 You can encrypt a backup with the --encrypt option. The backup is done using gpg.
-   > python manage.py dbbackup --encrypt
+
+    python manage.py dbbackup --encrypt
 
 Requirements:
 
@@ -385,9 +394,8 @@ Requirements:
    encryption key. The solution is to set the option 'trust-model' to 'always'.
    By default this value is False.  Set this to True to enable this option.
 
-<br/>
     
-## <u>COMMON ERRORS</u> ##
+## COMMON ERRORS ##
 
 **ERROR [403] The provided token does not allow this operation**
 
@@ -399,8 +407,7 @@ Requirements:
 
    Postgres does not allow scripting the password within the commands.  You
    can however create a .pgpass file in your home directory which the command
-   line tools will use.  Read more about it here:<br/>
-   [http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html](http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html) 
+   line tools will use.  Read more about it here: [http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html](http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html) 
     
     
     
