@@ -14,7 +14,7 @@ valid backup file.
 
 ## Management Commands ##
 
-### dbbackup ###
+**dbbackup** -
 Backup your database to the specified storage. By default this
 will backup all databases specified in your settings.py file and will not
 delete any old backups. You can optionally specify a server name to be included
@@ -22,7 +22,7 @@ in the backup filename.
 
     dbbackup [-s <servername>] [-d <database>] [--clean] [--compress] [--encrypt]
 
-### dbrestore ###
+**dbrestore** -
 Restore your database from the specified storage. By default
 this will lookup the latest backup and restore from that. You may optionally
 specify a servername if you you want to backup a database image that was
@@ -31,7 +31,7 @@ backup from.
 
     dbrestore [-d <database>] [-s <servername>] [-f <localfile>]
 
-### backup_media ###
+**backup_media** -
 Backup media files. Default this will backup the files in
 the MEDIA_ROOT. Optionally you can set the DBBACKUP_MEDIA_PATH setting.
 
