@@ -4,20 +4,17 @@ Save backup files to Dropbox.
 import re
 import datetime
 import tempfile
-from optparse import make_option
 import gzip
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from django.core.management.base import LabelCommand
-
+from optparse import make_option
 from ... import utils
 from ...dbcommands import DBCommands
 from ...dbcommands import DATE_FORMAT
 from ...storage.base import BaseStorage
 from ...storage.base import StorageError
-
 
 DATABASE_KEYS = getattr(settings, 'DBBACKUP_DATABASES', settings.DATABASES.keys())
 CLEANUP_KEEP = getattr(settings, 'DBBACKUP_CLEANUP_KEEP', 10)
@@ -55,26 +52,23 @@ class Command(LabelCommand):
     def save_new_backup(self, database):
         """ Save a new backup file. """
         print "Backing Up Database: %s" % database['NAME']
-        output_file = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
-        output_file.name = self.dbcommands.filename(self.servername)
-        self.dbcommands.run_backup_commands(output_file)
-
+        outputfile = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
+        outputfile.name = self.dbcommands.filename(self.servername)
+        self.dbcommands.run_backup_commands(outputfile)
         if self.compress:
-            compressed_file = self.compress_file(output_file)
-            output_file.close()
-            output_file = compressed_file
-
+            compressed_file = self.compress_file(outputfile)
+            outputfile.close()
+            outputfile = compressed_file
         if self.encrypt:
-            encrypted_file = utils.encrypt_file(output_file)
-            output_file = encrypted_file
-
-        print "  Backup tempfile created: %s (%s)" % (output_file.name, utils.handle_size(output_file))
-        print "  Writing file to %s: %s" % (self.storage.name, self.storage.backup_dir())
-        self.storage.write_file(output_file)
+            encrypted_file = utils.encrypt_file(outputfile)
+            outputfile = encrypted_file
+        print "  Backup tempfile created: %s (%s)" % (outputfile.name, utils.handle_size(outputfile))
+        print "  Writing file to %s: /%s" % (self.storage.name, self.storage.backup_dir())
+        self.storage.write_file(outputfile)
 
     def cleanup_old_backups(self, database):
         """ Cleanup old backups, keeping the number of backups specified by
-        DBBACKUP_CLEANUP_KEEP and any backups that occur on first of the month.
+            DBBACKUP_CLEANUP_KEEP and any backups that occur on first of the month.
         """
         if self.clean:
             print "Cleaning Old Backups for: %s" % database['NAME']
@@ -88,18 +82,16 @@ class Command(LabelCommand):
                     print "  Deleting: %s" % filepath
                     self.storage.delete_file(filepath)
 
-    def compress_file(self, input_file):
+    def compress_file(self, inputfile):
         """ Compress this file using gzip.
-        The input and the output are filelike objects.
+            The input and the output are filelike objects.
         """
         outputfile = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
-        outputfile.name = input_file.name + '.gz'
-
+        outputfile.name = inputfile.name + '.gz'
         zipfile = gzip.GzipFile(fileobj=outputfile, mode="wb")
         try:
-            input_file.seek(0)
-            zipfile.write(input_file.read())
+            inputfile.seek(0)
+            zipfile.write(inputfile.read())
         finally:
             zipfile.close()
-
         return outputfile

@@ -4,17 +4,18 @@ Dropbox API Storage object.
 import pickle
 import os
 import tempfile
+import cStringIO
+from django.conf import settings
+from dropbox import session
+from dropbox.client import DropboxClient
+from dropbox.rest import ErrorResponse
 from shutil import copyfileobj
 from .base import BaseStorage, StorageError
-from dropbox.rest import ErrorResponse
-from django.conf import settings
-from dropbox.client import DropboxClient
-from dropbox import session
 
 DEFAULT_ACCESS_TYPE = 'app_folder'
-
 MAX_SPOOLED_SIZE = 10 * 1024 * 1024
 FILE_SIZE_LIMIT = 145 * 1024 * 1024
+
 
 ################################
 #  Dropbox Storage Object
@@ -24,8 +25,7 @@ class Storage(BaseStorage):
     """ Dropbox API Storage. """
     name = 'Dropbox'
     TOKENS_FILEPATH = getattr(settings, 'DBBACKUP_TOKENS_FILEPATH', None)
-    DROPBOX_DIRECTORY = getattr(settings, 'DBBACKUP_DROPBOX_DIRECTORY', "")
-    DROPBOX_DIRECTORY = '/%s/' % DROPBOX_DIRECTORY.strip('/')
+    DROPBOX_DIRECTORY = getattr(settings, 'DBBACKUP_DROPBOX_DIRECTORY', '').strip('/')
     DBBACKUP_DROPBOX_APP_KEY = getattr(settings, 'DBBACKUP_DROPBOX_APP_KEY', None)
     DBBACKUP_DROPBOX_APP_SECRET = getattr(settings, 'DBBACKUP_DROPBOX_APP_SECRET', None)
     DBBACKUP_DROPBOX_ACCESS_TYPE = getattr(settings, 'DBBACKUP_DROPBOX_ACCESS_TYPE', DEFAULT_ACCESS_TYPE)
@@ -57,7 +57,6 @@ class Storage(BaseStorage):
         """ Delete the specified filepath. """
         files = self.list_directory(raw=True)
         to_be_deleted = [x for x in files if os.path.splitext(x)[0] == filepath]
-
         for name in to_be_deleted:
             self.run_dropbox_action(self.dropbox.file_delete, name)
 
@@ -68,45 +67,19 @@ class Storage(BaseStorage):
         if not raw:
             filepaths = [os.path.splitext(x)[0] for x in filepaths]
             filepaths = list(set(filepaths))
-
         return sorted(filepaths)
 
     def get_numbered_path(self, path, number):
         return "{0}.{1}".format(path, number)
 
-    @staticmethod
-    def chunked_file(filehandle, chunk_size=FILE_SIZE_LIMIT):
-        eof = False
-        while not eof:
-            with tempfile.SpooledTemporaryFile(max_size=MAX_SPOOLED_SIZE) as t:
-                chunk_space = chunk_size
-                while chunk_space > 0:
-                    data = filehandle.read(min(16384, chunk_space))
-                    if not data:
-                        eof = True
-                        break
-
-                    chunk_space -= len(data)
-                    t.write(data)
-
-                if t.tell() > 0:
-                    t.seek(0)
-                    yield t
-
     def write_file(self, filehandle):
         """ Write the specified file. """
         filehandle.seek(0)
         total_files = 0
-        path = os.path.join(
-            self.DROPBOX_DIRECTORY, 
-            filehandle.name,
-        )
+        path = os.path.join(self.DROPBOX_DIRECTORY, filehandle.name)
         for chunk in self.chunked_file(filehandle):
-            self.run_dropbox_action(
-                self.dropbox.put_file, 
-                self.get_numbered_path(path, total_files), 
-                chunk,
-            )
+            self.run_dropbox_action(self.dropbox.put_file,
+                self.get_numbered_path(path, total_files), chunk)
             total_files += 1
 
     def read_file(self, filepath):
@@ -115,21 +88,16 @@ class Storage(BaseStorage):
         filehandle = tempfile.SpooledTemporaryFile(max_size=MAX_SPOOLED_SIZE)
         try:
             while True:
-                response = self.run_dropbox_action(
-                    self.dropbox.get_file, 
+                response = self.run_dropbox_action(self.dropbox.get_file, 
                     self.get_numbered_path(filepath, total_files),
-                    ignore_404=(total_files > 0),
-                )
+                    ignore_404=(total_files > 0))
                 if not response:
                     break
-
                 copyfileobj(response, filehandle)
                 total_files += 1
-
         except:
             filehandle.close()
             raise
-
         return filehandle
 
     def run_dropbox_action(self, method, *args, **kwargs):
@@ -140,7 +108,6 @@ class Storage(BaseStorage):
         except ErrorResponse, e:
             if ignore_404 and e.status == 404:
                 return None
-
             errmsg = "ERROR %s" % (e,)
             raise StorageError(errmsg)
         return response
@@ -217,3 +184,21 @@ class Storage(BaseStorage):
                 tokendata = pickle.load(tokenhandle)
             self._request_token = tokendata.get('request_token')
             self._access_token = tokendata.get('access_token')
+
+    @staticmethod
+    def chunked_file(filehandle, chunk_size=FILE_SIZE_LIMIT):
+        eof = False
+        while not eof:
+            tmpfile = cStringIO.StringIO()
+            chunk_space = chunk_size
+            while chunk_space > 0:
+                data = filehandle.read(min(16384, chunk_space))
+                if not data:
+                    eof = True
+                    break
+                chunk_space -= len(data)
+                tmpfile.write(data)
+            if tmpfile.tell() > 0:
+                tmpfile.seek(0)
+                yield tmpfile
+            tmpfile.close()

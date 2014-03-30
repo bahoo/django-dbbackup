@@ -24,6 +24,7 @@ class Command(LabelCommand):
         make_option("-d", "--database", help="Database to restore"),
         make_option("-f", "--filepath", help="Specific file to backup from"),
         make_option("-s", "--servername", help="Use a different servername backup"),
+        make_option("-l", "--list", action='store_true', default=False, help="List backups in the backup directory"),
     )
 
     def handle(self, **options):
@@ -35,6 +36,8 @@ class Command(LabelCommand):
             self.database = self._get_database(options)
             self.storage = BaseStorage.storage_factory()
             self.dbcommands = DBCommands(self.database)
+            if options.get('list'):
+                return self.list_backups()
             self.restore_backup()
         except StorageError, err:
             raise CommandError(err)
@@ -59,7 +62,7 @@ class Command(LabelCommand):
             filepaths = self.storage.list_directory()
             filepaths = self.dbcommands.filter_filepaths(filepaths, self.servername)
             if not filepaths:
-                raise CommandError("No backup files found in: %s" % self.storage.backup_dir())
+                raise CommandError("No backup files found in: /%s" % self.storage.backup_dir())
             self.filepath = filepaths[-1]
         # Restore the specified filepath backup
         print "  Restoring: %s" % self.filepath
@@ -123,3 +126,10 @@ class Command(LabelCommand):
         finally:
             os.rmdir(temp_dir)
         return outputfile
+
+    def list_backups(self):
+        """ List backups in the backup directory. """
+        print "Listing backups on %s in /%s:" % (self.storage.name, self.storage.backup_dir())
+        for filepath in self.storage.list_directory():
+            print "  %s" % os.path.basename(filepath)
+            print utils.filename_details(filepath)
