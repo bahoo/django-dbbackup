@@ -34,6 +34,7 @@ the MEDIA_ROOT. Optionally you can set the DBBACKUP_MEDIA_PATH setting.
 
     backup_media [--encrypt] [--clean] [--servername <servername>]
 
+------
 
 ## DBBackup to Amazon S3 ##
 
@@ -89,6 +90,7 @@ you can follow the required setup below.
 **DBBACKUP_S3_IS_SECURE (optional)** -
    Set False to disable using SSL. Default is True.
 
+------
 
 ## DBBackup to Dropbox ##
 
@@ -157,6 +159,7 @@ worry, all instructions are below.
    The directory in Dropbox you wish to save your backups. By default this is
    set to '/django-dbbackups/'.
 
+------
 
 ## DBBackup to Local Disk ##
 
@@ -188,6 +191,7 @@ system.
 **DBBACKUP_FILESYSTEM_DIRECTORY (required)** -
    The directory on your local system you wish to save your backups.
 
+------
 
 ## DBBackup to FTP ##
 
@@ -225,6 +229,7 @@ required settings below.
 **DBBACKUP_FTP_PATH** -
    The directory on remote FTP server you wish to save your backups.
 
+------
 
 ## DATABASE SETTINGS ##
 
@@ -306,6 +311,7 @@ you might consider fully customizing the admin commands.
    
     [WRITE_FILE, '{databasename}']
 
+------
 
 ## DEFINING BACKUP COMMANDS ##
 
@@ -322,6 +328,7 @@ There are also two special commands READ_FILE and WRITE_FILE which take the
 form of a two-item list, the second item being the file to read or write.
 Please see the SQLite settings above for reference.
 
+------
 
 ## GLOBAL SETTINGS ##
 
@@ -394,6 +401,7 @@ Requirements:
    encryption key. The solution is to set the option 'trust-model' to 'always'.
    By default this value is False.  Set this to True to enable this option.
 
+------
     
 ## COMMON ERRORS ##
 
