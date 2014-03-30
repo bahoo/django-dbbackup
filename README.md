@@ -12,7 +12,7 @@ attempt to run this command if you are not sure that you already have a
 valid backup file.
 
 
-## MANAGEMENT COMMANDS ##
+## Management Commands ##
 
 ### dbbackup ###
 Backup your database to the specified storage. By default this
@@ -39,14 +39,14 @@ the MEDIA_ROOT. Optionally you can set the DBBACKUP_MEDIA_PATH setting.
 
 ------
 
-# DBBackup to Amazon S3 #
+# DBBACKUP TO AMAZON S3 #
 
 In order to backup to Amazon S3, you'll first need to create an Amazon
 Webservices Account and setup your Amazon S3 bucket. Once that is complete,
 you can follow the required setup below.
 
 
-## SETUP YOUR DJANGO PROJECT ##
+## Setup Your Django Project ##
 
 1.) Install django-dbbackup and the required boto dependancy:
 
@@ -66,7 +66,7 @@ you can follow the required setup below.
 4.) Now you're ready to use the backup management commands.
 
 
-## AVAILABLE SETTINGS ##
+## Available Settings ##
 
 **DBBACKUP_S3_BUCKET (required)** -
    The name of the Amazon S3 bucket to store your backups. This directory must
@@ -95,14 +95,14 @@ you can follow the required setup below.
 
 ------
 
-# DBBackup to Dropbox #
+# DBBACKUP TO DROPBOX #
 
 In order to backup to Dropbox, you'll first need to create a Dropbox Account
 and set it up to communicate with the Django-DBBackup application. Don't
 worry, all instructions are below.
 
 
-## SETUP YOUR DROPBOX ACCOUNT ##
+## Setup Your Dropbox Account ##
 
 1. Login to Dropbox and navigate to Developers » MyApps. [https://www.dropbox.com/developers/start/setup#python](https://www.dropbox.com/developers/start/setup#python)
 
@@ -113,7 +113,7 @@ worry, all instructions are below.
    the 'App Key' and 'App Secret' values inside. You'll need those later.
 
 
-## SETUP YOUR DJANGO PROJECT ##
+## Setup Your Django Project ##
 
 1.) Install django-dbbackup and the required Python Dropbox Client API. If
    using Pip, you can install this package using the following command:
@@ -136,7 +136,7 @@ worry, all instructions are below.
    access to your Dropbox account.
 
 
-## AVAILABLE SETTINGS ##
+## Available Settings ##
 
 **DBBACKUP_TOKENS_FILEPATH (required)** -
    The local filepath to store the Dropbox oAuth request and tokens. This file
@@ -164,7 +164,7 @@ worry, all instructions are below.
 
 ------
 
-# DBBackup to Local Disk #
+# DBBACKUP TO LOCAL DISK #
 
 To store your database backups on the local filesystem, simply setup the
 required settings below. Storing backups to local disk may also be useful for
@@ -172,7 +172,7 @@ Dropbox if you already have the offical Dropbox client installed on your
 system.
 
 
-## SETUP YOUR DJANGO PROJECT ##
+## Setup Your Django Project ##
 
 1.) Install django-dbbackup application:
 
@@ -189,19 +189,19 @@ system.
 4.) Now you're ready to use the backup management commands.
 
 
-## AVAILABLE SETTINGS ##
+## Available Settings ##
 
 **DBBACKUP_FILESYSTEM_DIRECTORY (required)** -
    The directory on your local system you wish to save your backups.
 
 ------
 
-# DBBackup to FTP #
+# DBBACKUP TO FTP #
 
 To store your database backups on the remote filesystem via FTP, simply setup the
 required settings below.
 
-## SETUP YOUR DJANGO PROJECT ##
+## Setup Your Django Project ##
 
 1.) Install django-dbbackup application:
 
@@ -221,7 +221,7 @@ required settings below.
 4.) Now you're ready to use the backup management commands.
 
 
-## AVAILABLE SETTINGS ##
+## Available Settings ##
 
 **DBBACKUP_FTP_HOST (required)** -
    Hostname for the server you wish to save your backups.
@@ -253,7 +253,7 @@ you might consider fully customizing the admin commands.
    postgres, or sqlite.
 
 
-## MYSQL ##
+## MySQL ##
 
 **DBBACKUP_MYSQL_EXTENSION (optional)** -
    Extension to use for a mysql backup. By default this is 'mysql'.
@@ -273,7 +273,7 @@ you might consider fully customizing the admin commands.
     mysql --user={adminuser} --password={password} --host={host} --port={port} {databasename} <
 
 
-## POSTGRES ##
+## PostgreSQL ##
 
 **DBBACKUP_POSTGRES_EXTENSION (optional)** -
    Extension to use for a postgres backup. By default this is 'psql'.
@@ -295,7 +295,7 @@ you might consider fully customizing the admin commands.
     psql --username={adminuser} --host={host} --port={port} --single-transaction {databasename} <
 
 
-## SQLITE ##
+## SQLite ##
 
 **DBBACKUP_SQLITE_EXTENSION (optional)** -
    Extension to use for an sqlite backup. By default this is 'sqlite'.
@@ -384,7 +384,7 @@ Please see the SQLite settings above for reference.
    is not set, then the MEDIA_ROOT setting is used.
 
 
-## ENCRYPTION SETTINGS ##
+## Encryption Settings ##
 
 You can encrypt a backup with the --encrypt option. The backup is done using gpg.
 
