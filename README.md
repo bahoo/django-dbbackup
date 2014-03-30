@@ -56,9 +56,9 @@ you can follow the required setup below.
 3.) Include the required settings below.
 
     DBBACKUP_STORAGE = 'dbbackup.storage.s3_storage'
-    DBBACKUP_S3_BUCKET = '&lt;amazon_bucket_name&gt;'
-    DBBACKUP_S3_ACCESS_KEY = '&lt;amazon_access_key&gt;'
-    DBBACKUP_S3_SECRET_KEY = '&lt;amazon_secret_key&gt;'
+    DBBACKUP_S3_BUCKET = '<amazon_bucket_name>'
+    DBBACKUP_S3_ACCESS_KEY = '<amazon_access_key>'
+    DBBACKUP_S3_SECRET_KEY = '<amazon_secret_key>'
 
 4.) Now you're ready to use the backup management commands.
 
