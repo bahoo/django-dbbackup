@@ -11,13 +11,10 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
-from ... import utils
-from ...storage.base import BaseStorage
-from ...storage.base import StorageError
-
-
-DATE_FORMAT = getattr(settings, 'DBBACKUP_DATE_FORMAT', '%Y-%m-%d-%H%M%S')
-CLEANUP_KEEP = getattr(settings, 'DBBACKUP_CLEANUP_KEEP', 10)
+from dbbackup import utils
+from dbbackup.storage.base import BaseStorage
+from dbbackup.storage.base import StorageError
+from dbbackup import settings as dbbackup_settings
 
 
 class Command(BaseCommand):
@@ -63,7 +60,7 @@ class Command(BaseCommand):
         return '%s%s-%s.media.tar.gz' % (
             self.get_databasename(),
             server_name,
-            datetime.now().strftime(DATE_FORMAT)
+            datetime.now().strftime(dbbackup_settings.DATE_FORMAT)
         )
 
     def get_databasename(self):
@@ -88,7 +85,7 @@ class Command(BaseCommand):
             os.rmdir(temp_dir)
 
     def get_source_dir(self):
-        return getattr(settings, 'DBBACKUP_MEDIA_PATH', settings.MEDIA_ROOT)
+        return dbbackup_settings.MEDIA_PATH
 
     def cleanup_old_backups(self):
         """ Cleanup old backups, keeping the number of backups specified by
@@ -98,7 +95,7 @@ class Command(BaseCommand):
 
         file_list = self.get_backup_file_list()
 
-        for backup_date, filename in file_list[0:-CLEANUP_KEEP]:
+        for backup_date, filename in file_list[0:-dbbackup_settings.CLEANUP_KEEP_MEDIA]:
             if int(backup_date.strftime("%d")) != 1:
                 print("  Deleting: %s" % filename)
                 self.storage.delete_file(filename)
@@ -118,7 +115,7 @@ class Command(BaseCommand):
 
         def get_datetime_from_filename(filename):
             datestr = re.findall(media_re, filename)[0]
-            return datetime.strptime(datestr, DATE_FORMAT)
+            return datetime.strptime(datestr, dbbackup_settings.DATE_FORMAT)
 
         file_list = [
             (get_datetime_from_filename(f), f)
@@ -128,4 +125,4 @@ class Command(BaseCommand):
         return sorted(file_list, key=lambda v: v[0])
 
     def get_servername(self):
-        return self.servername or getattr(settings, 'DBBACKUP_SERVER_NAME', '')
+        return self.servername or dbbackup_settings.SERVER_NAME

@@ -28,8 +28,8 @@ class Command(LabelCommand):
         make_option("-x", "--backup-extension", help="The extension to use when scanning for files to restore from."),
         make_option("-s", "--servername", help="Use a different servername backup"),
         make_option("-l", "--list", action='store_true', default=False, help="List backups in the backup directory"),
-        make_option("-c", "--decrypt", help="Decrypt data before restoring", default=False),
-        make_option("-z", "--uncompress", help="Uncompress gzip data before restoring", default=False),
+        make_option("-c", "--decrypt", help="Decrypt data before restoring", default=False, action='store_true'),
+        make_option("-z", "--uncompress", help="Uncompress gzip data before restoring", action='store_true'),
     )
 
     def handle(self, **options):
@@ -77,6 +77,7 @@ class Command(LabelCommand):
         input_filename = self.filepath
         inputfile = self.storage.read_file(input_filename)
         if self.decrypt:
+            raise
             unencrypted_file = self.unencrypt_file(inputfile)
             inputfile.close()
             inputfile = unencrypted_file
@@ -86,6 +87,7 @@ class Command(LabelCommand):
             inputfile.close()
             inputfile = uncompressed_file
         print("  Restore tempfile created: %s" % utils.handle_size(inputfile))
+        inputfile.seek(0)
         self.dbcommands.run_restore_commands(inputfile)
 
     def get_extension(self, filename):
@@ -94,8 +96,8 @@ class Command(LabelCommand):
 
     def uncompress_file(self, inputfile):
         """ Uncompress this file using gzip. The input and the output are filelike objects. """
-        outputfile = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
-        zipfile = gzip.GzipFile(fileobj=inputfile, mode="rb")
+        outputfile = tempfile.SpooledTemporaryFile(max_size=500 * 1024 * 1024)
+        zipfile = gzip.GzipFile(fileobj=inputfile, mode="r")
         try:
             inputfile.seek(0)
             outputfile.write(zipfile.read())

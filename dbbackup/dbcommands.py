@@ -41,13 +41,11 @@ class BaseEngineSettings:
     def get_env(self):
         """Extra environment variables to be passed to shell execution"""
         return {}
-    
 
 
 ##################################
 #  MySQL Settings
 ##################################
-
 class MySQLSettings(BaseEngineSettings):
     """Settings for the MySQL database engine"""
 
@@ -101,8 +99,13 @@ class PostgreSQLSettings(BaseEngineSettings):
             restore_commands = [
                 shlex.split(self.dropdb_command()),
                 shlex.split(self.createdb_command()),
-                shlex.split(self.import_command())
             ]
+            prepare_db_command = self.prepare_db_command()
+            if prepare_db_command:
+                restore_commands.append(shlex.split(prepare_db_command))
+            restore_commands.append(
+                shlex.split(self.import_command())
+            )
         return restore_commands
 
     def dropdb_command(self):
@@ -122,19 +125,39 @@ class PostgreSQLSettings(BaseEngineSettings):
         if self.database_port:
             command = '%s --port={port}' % command
         return '%s {databasename}' % command
+    
+    def prepare_db_command(self):
+        """Use this to run a command after createdb"""
+        return None
 
     def import_command(self):
         """Constructs the PostgreSQL db import command"""
-        command = 'psql --username={adminuser}'
+        command = 'psql -d {databasename} -f - --username={adminuser}'
         if self.database_host:
             command = '%s --host={host}' % command
         if self.database_port:
             command = '%s --port={port}' % command
-        return '%s --single-transaction {databasename} <' % command
+        if settings.POSTGRESQL_RESTORE_SINGLE_TRANSACTION:
+            command += ' --single-transaction '
+        return '%s <' % command
 
     def get_env(self):
         """Extra environment variables to be passed to shell execution"""
         return {'PGPASSWORD': '{password}'}
+
+
+class PostgisSQLSettings(PostgreSQLSettings):
+    """Settings for the PostgreSQL database engine"""
+
+    def prepare_db_command(self):
+        if settings.POSTGIS_SPATIAL_REF:
+            return None
+        command = 'psql --username={adminuser} -c "CREATE EXTENSION postgis;"'
+        if self.database_host:
+            command = '%s --host={host}' % command
+        if self.database_port:
+            command = '%s --port={port}' % command
+        return '%s {databasename}' % command
 
 
 ##################################
@@ -167,7 +190,9 @@ class DBCommands:
         """ Returns the proper settings dictionary. """
         if any(e in self.engine for e in ['mysql']):
             return MySQLSettings(self.database)
-        elif any(e in self.engine for e in ['postgres', 'postgis']):
+        elif any(e in self.engine for e in ['postgis']):
+            return PostgisSQLSettings(self.database)
+        elif any(e in self.engine for e in ['postgres']):
             return PostgreSQLSettings(self.database)
         elif any(e in self.engine for e in ['sqlite']):
             return SQLiteSettings(self.database)
