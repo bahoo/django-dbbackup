@@ -24,7 +24,7 @@ setup(
     name='django-dbbackup',
     version='1.9.0',
     description='Management commands to help backup and restore a project database to AmazonS3, Dropbox or local disk.',
-    long_description=read('README.txt'),
+    long_description=read('README.md'),
     author='Michael Shepanski',
     author_email='mjs7231@gmail.com',
     install_requires=['boto', 'dropbox'],
