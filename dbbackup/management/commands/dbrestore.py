@@ -25,8 +25,11 @@ class Command(LabelCommand):
     option_list = BaseCommand.option_list + (
         make_option("-d", "--database", help="Database to restore"),
         make_option("-f", "--filepath", help="Specific file to backup from"),
+        make_option("-x", "--backup-extension", help="The extension to use when scanning for files to restore from."),
         make_option("-s", "--servername", help="Use a different servername backup"),
         make_option("-l", "--list", action='store_true', default=False, help="List backups in the backup directory"),
+        make_option("-c", "--decrypt", help="Decrypt data before restoring", default=False),
+        make_option("-z", "--uncompress", help="Uncompress gzip data before restoring", default=False),
     )
 
     def handle(self, **options):
@@ -34,7 +37,10 @@ class Command(LabelCommand):
         try:
             connection.close()
             self.filepath = options.get('filepath')
+            self.backup_extension = options.get('backup-extension') or 'backup'
             self.servername = options.get('servername')
+            self.decrypt = options.get('decrypt')
+            self.uncompress = options.get('uncompress')
             self.database = self._get_database(options)
             self.storage = BaseStorage.storage_factory()
             self.dbcommands = DBCommands(self.database)
@@ -62,20 +68,20 @@ class Command(LabelCommand):
         if not self.filepath:
             print("  Finding latest backup")
             filepaths = self.storage.list_directory()
-            filepaths = self.dbcommands.filter_filepaths(filepaths, self.servername)
+            filepaths = list(filter(lambda f: f.endswith('.' + self.backup_extension), filepaths))
             if not filepaths:
-                raise CommandError("No backup files found in: /%s" % self.storage.backup_dir())
+                raise CommandError("No backup files found in: /%s" % self.storage.backup_dir)
             self.filepath = filepaths[-1]
         # Restore the specified filepath backup
         print("  Restoring: %s" % self.filepath)
         input_filename = self.filepath
         inputfile = self.storage.read_file(input_filename)
-        if self.get_extension(input_filename) == '.gpg':
+        if self.decrypt:
             unencrypted_file = self.unencrypt_file(inputfile)
             inputfile.close()
             inputfile = unencrypted_file
             input_filename = inputfile.name
-        if self.get_extension(input_filename) == '.gz':
+        if self.uncompress:
             uncompressed_file = self.uncompress_file(inputfile)
             inputfile.close()
             inputfile = uncompressed_file
@@ -131,7 +137,7 @@ class Command(LabelCommand):
 
     def list_backups(self):
         """ List backups in the backup directory. """
-        print("Listing backups on %s in /%s:" % (self.storage.name, self.storage.backup_dir()))
+        print("Listing backups on %s in /%s:" % (self.storage.name, self.storage.backup_dir))
         for filepath in self.storage.list_directory():
             print("  %s" % os.path.basename(filepath))
             print(utils.filename_details(filepath))
