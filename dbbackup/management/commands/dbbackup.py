@@ -18,9 +18,6 @@ from ...dbcommands import DATE_FORMAT
 from ...storage.base import BaseStorage
 from ...storage.base import StorageError
 
-DATABASE_KEYS = getattr(settings, 'DBBACKUP_DATABASES', list(settings.DATABASES.keys()))
-CLEANUP_KEEP = getattr(settings, 'DBBACKUP_CLEANUP_KEEP', 10)
-
 
 class Command(LabelCommand):
     help = "dbbackup [-c] [-d <dbname>] [-s <servername>] [--compress] [--encrypt]"
@@ -37,25 +34,31 @@ class Command(LabelCommand):
         """ Django command handler. """
         try:
             self.clean = options.get('clean')
+            self.clean_keep = getattr(settings, 'DBBACKUP_CLEANUP_KEEP', 10)
             self.database = options.get('database')
             self.servername = options.get('servername')
+            self.filename = options.get('output-file')
             self.compress = options.get('compress')
             self.encrypt = options.get('encrypt')
             self.storage = BaseStorage.storage_factory()
-            database_keys = (self.database,) if self.database else DATABASE_KEYS
+            if self.database:
+                database_keys = self.database,
+            else:
+                database_keys = getattr(settings, 'DBBACKUP_DATABASES', list(settings.DATABASES.keys()))
             for database_key in database_keys:
                 database = settings.DATABASES[database_key]
                 self.dbcommands = DBCommands(database)
-                self.save_new_backup(database)
+                self.save_new_backup(database, database_key)
                 self.cleanup_old_backups(database)
         except StorageError as err:
             raise CommandError(err)
 
-    def save_new_backup(self, database):
+    def save_new_backup(self, database, database_name):
         """ Save a new backup file. """
         print("Backing Up Database: %s" % database['NAME'])
+        filename = database_name + ".backup"
         outputfile = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
-        outputfile.name = self.dbcommands.filename(self.servername)
+        #outputfile.name = self.dbcommands.filename(self.servername)
         self.dbcommands.run_backup_commands(outputfile)
         if self.compress:
             compressed_file = self.compress_file(outputfile)
@@ -64,9 +67,9 @@ class Command(LabelCommand):
         if self.encrypt:
             encrypted_file = utils.encrypt_file(outputfile)
             outputfile = encrypted_file
-        print("  Backup tempfile created: %s (%s)" % (outputfile.name, utils.handle_size(outputfile)))
-        print("  Writing file to %s: /%s" % (self.storage.name, self.storage.backup_dir()))
-        self.storage.write_file(outputfile)
+        print("  Backup tempfile created: %s" % (utils.handle_size(outputfile)))
+        print("  Writing file to %s: /%s, filename: %s" % (self.storage.name, self.storage.backup_dir(), filename))
+        self.storage.write_file(outputfile, filename)
 
     def cleanup_old_backups(self, database):
         """ Cleanup old backups, keeping the number of backups specified by
@@ -76,7 +79,7 @@ class Command(LabelCommand):
             print("Cleaning Old Backups for: %s" % database['NAME'])
             filepaths = self.storage.list_directory()
             filepaths = self.dbcommands.filter_filepaths(filepaths)
-            for filepath in sorted(filepaths[0:-CLEANUP_KEEP]):
+            for filepath in sorted(filepaths[0:-self.clean_keep]):
                 regex = r'^%s' % self.dbcommands.filename_match(self.servername, '(.*?)')
                 datestr = re.findall(regex, filepath)[0]
                 dateTime = datetime.datetime.strptime(datestr, DATE_FORMAT)

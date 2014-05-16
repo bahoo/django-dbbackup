@@ -14,7 +14,7 @@ from django.conf import settings
 
 class Storage(BaseStorage):
     """ Filesystem API Storage. """
-    BACKUP_DIRECTORY = getattr(settings, 'DBBACKUP_FILESYSTEM_DIRECTORY', None)
+    BACKUP_DIRECTORY = getattr(settings, 'DBBACKUP_FILESYSTEM_DIRECTORY', os.getcwd())
 
     def __init__(self, server_name=None):
         self._check_filesystem_errors()
@@ -43,11 +43,11 @@ class Storage(BaseStorage):
         filepaths = [os.path.join(self.BACKUP_DIRECTORY, path) for path in filepaths]
         return sorted(filter(os.path.isfile, filepaths))
 
-    def write_file(self, filehandle):
+    def write_file(self, filehandle, filename):
         """ Write the specified file. """
         filehandle.seek(0)
-        backuppath = os.path.join(self.BACKUP_DIRECTORY, filehandle.name)
-        backupfile = open(backuppath, 'w')
+        backuppath = os.path.join(self.BACKUP_DIRECTORY, filename)
+        backupfile = open(backuppath, 'wb')
         data = filehandle.read(1024)
         while data:
             backupfile.write(data)

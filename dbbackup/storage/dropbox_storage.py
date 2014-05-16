@@ -74,11 +74,11 @@ class Storage(BaseStorage):
     def get_numbered_path(self, path, number):
         return "{0}.{1}".format(path, number)
 
-    def write_file(self, filehandle):
+    def write_file(self, filehandle, filename):
         """ Write the specified file. """
         filehandle.seek(0)
         total_files = 0
-        path = os.path.join(self.DROPBOX_DIRECTORY, filehandle.name)
+        path = os.path.join(self.DROPBOX_DIRECTORY, filename)
         for chunk in self.chunked_file(filehandle):
             self.run_dropbox_action(self.dropbox.put_file,
                 self.get_numbered_path(path, total_files), chunk)

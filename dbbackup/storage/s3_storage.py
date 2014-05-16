@@ -49,9 +49,9 @@ class Storage(BaseStorage):
     def list_directory(self):
         return [k.name for k in self.bucket.list(prefix=self.S3_DIRECTORY)]
 
-    def write_file(self, filehandle):
+    def write_file(self, filehandle, filename):
         # Use multipart upload because normal upload maximum is 5 GB.
-        filepath = os.path.join(self.S3_DIRECTORY, filehandle.name)
+        filepath = os.path.join(self.S3_DIRECTORY, filename)
         filehandle.seek(0)
         handle = self.bucket.initiate_multipart_upload(filepath)
         try:
