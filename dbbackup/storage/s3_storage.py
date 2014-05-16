@@ -1,10 +1,12 @@
 """
 S3 Storage object.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import os
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
-from cStringIO import StringIO
+from io import StringIO
 from django.conf import settings
 from tempfile import SpooledTemporaryFile
 from .base import BaseStorage, StorageError

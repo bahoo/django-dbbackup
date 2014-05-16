@@ -2,6 +2,8 @@
 Restore pgdump files from Dropbox.
 See __init__.py for a list of options.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import os
 import tempfile
 import gzip
@@ -39,7 +41,7 @@ class Command(LabelCommand):
             if options.get('list'):
                 return self.list_backups()
             self.restore_backup()
-        except StorageError, err:
+        except StorageError as err:
             raise CommandError(err)
 
     def _get_database(self, options):
@@ -50,22 +52,22 @@ class Command(LabelCommand):
                 errmsg = "Because this project contains more than one database, you"
                 errmsg += " must specify the --database option."
                 raise CommandError(errmsg)
-            database_key = settings.DATABASES.keys()[0]
+            database_key = list(settings.DATABASES.keys())[0]
         return settings.DATABASES[database_key]
 
     def restore_backup(self):
         """ Restore the specified database. """
-        print "Restoring backup for database: %s" % self.database['NAME']
+        print("Restoring backup for database: %s" % self.database['NAME'])
         # Fetch the latest backup if filepath not specified
         if not self.filepath:
-            print "  Finding latest backup"
+            print("  Finding latest backup")
             filepaths = self.storage.list_directory()
             filepaths = self.dbcommands.filter_filepaths(filepaths, self.servername)
             if not filepaths:
                 raise CommandError("No backup files found in: /%s" % self.storage.backup_dir())
             self.filepath = filepaths[-1]
         # Restore the specified filepath backup
-        print "  Restoring: %s" % self.filepath
+        print("  Restoring: %s" % self.filepath)
         input_filename = self.filepath
         inputfile = self.storage.read_file(input_filename)
         if self.get_extension(input_filename) == '.gpg':
@@ -77,7 +79,7 @@ class Command(LabelCommand):
             uncompressed_file = self.uncompress_file(inputfile)
             inputfile.close()
             inputfile = uncompressed_file
-        print "  Restore tempfile created: %s" % utils.handle_size(inputfile)
+        print("  Restore tempfile created: %s" % utils.handle_size(inputfile))
         self.dbcommands.run_restore_commands(inputfile)
 
     def get_extension(self, filename):
@@ -99,8 +101,8 @@ class Command(LabelCommand):
         """ Unencrypt this file using gpg. The input and the output are filelike objects. """
         import gnupg
         def get_passphrase():
-            print 'Input Passphrase: '
-            return raw_input()
+            print('Input Passphrase: ')
+            return input()
         
         temp_dir = tempfile.mkdtemp()
         try:
@@ -129,7 +131,7 @@ class Command(LabelCommand):
 
     def list_backups(self):
         """ List backups in the backup directory. """
-        print "Listing backups on %s in /%s:" % (self.storage.name, self.storage.backup_dir())
+        print("Listing backups on %s in /%s:" % (self.storage.name, self.storage.backup_dir()))
         for filepath in self.storage.list_directory():
-            print "  %s" % os.path.basename(filepath)
-            print utils.filename_details(filepath)
+            print("  %s" % os.path.basename(filepath))
+            print(utils.filename_details(filepath))

@@ -1,6 +1,8 @@
 """
 Process the Backup or Restore commands.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import copy
 import os
 import re
@@ -10,6 +12,7 @@ from shutil import copyfileobj
 from subprocess import Popen
 from django.conf import settings
 from django.core.management.base import CommandError
+import collections
 
 READ_FILE = '<READ_FILE>'
 WRITE_FILE = '<WRITE_FILE>'
@@ -197,15 +200,15 @@ class DBCommands:
             'extension': self.settings.EXTENSION,
             'wildcard': wildcard,
         }
-        if callable(FILENAME_TEMPLATE):
+        if isinstance(FILENAME_TEMPLATE, collections.Callable):
             filename = FILENAME_TEMPLATE(**params)
         else:
             params['datetime'] = wildcard or params['timestamp'].strftime(DATE_FORMAT)
             # if Python 2.6 is okay, this line can replace the 4 below it:
             # filename = FILENAME_TEMPLATE.format(**params)
             filename = FILENAME_TEMPLATE
-            for key, value in params.iteritems():
-                filename = filename.replace('{%s}' % key, unicode(value))
+            for key, value in params.items():
+                filename = filename.replace('{%s}' % key, str(value))
             filename = filename.replace('--', '-')
         return filename
 
@@ -216,7 +219,7 @@ class DBCommands:
     def filter_filepaths(self, filepaths, servername=None):
         """ Returns a list of backups file paths from the dropbox entries. """
         regex = r'[\^\%s]%s' % (os.sep, self.filename_match(servername, '.*?'))
-        filepaths = filter(lambda path: re.search(regex, path), filepaths)
+        filepaths = [path for path in filepaths if re.search(regex, path)]
         return filepaths
 
     def translate_command(self, command):
@@ -256,8 +259,8 @@ class DBCommands:
         devnull = open(os.devnull, 'w')
         pstdin = stdin if command[-1] == '<' else None
         pstdout = stdout if command[-1] == '>' else devnull
-        command = filter(lambda arg: arg not in ['<', '>'], command)
-        print self._clean_passwd("  Running: %s" % ' '.join(command))
+        command = [arg for arg in command if arg not in ['<', '>']]
+        print(self._clean_passwd("  Running: %s" % ' '.join(command)))
         process = Popen(command, stdin=pstdin, stdout=pstdout)
         process.wait()
         devnull.close()
@@ -266,12 +269,12 @@ class DBCommands:
 
     def read_file(self, filepath, stdout):
         """ Read the specified file to stdout. """
-        print "  Reading: %s" % filepath
+        print("  Reading: %s" % filepath)
         with open(filepath, "rb") as f:
             copyfileobj(f, stdout)
 
     def write_file(self, filepath, stdin):
         """ Write the specified file from stdin. """
-        print "  Writing: %s" % filepath
+        print("  Writing: %s" % filepath)
         with open(filepath, 'wb') as f:
             copyfileobj(stdin, f)

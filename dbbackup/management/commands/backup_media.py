@@ -1,3 +1,5 @@
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import os
 from datetime import datetime
 import tarfile
@@ -37,19 +39,19 @@ class Command(BaseCommand):
             if options.get('clean'):
                 self.cleanup_old_backups()
 
-        except StorageError, err:
+        except StorageError as err:
             raise CommandError(err)
 
     def backup_mediafiles(self, encrypt):
-        print "Backing up media files"
+        print("Backing up media files")
         output_file = self.create_backup_file(self.get_source_dir(), self.get_backup_basename())
 
         if encrypt:
             encrypted_file = utils.encrypt_file(output_file)
             output_file = encrypted_file
 
-        print "  Backup tempfile created: %s (%s)" % (output_file.name, utils.handle_size(output_file))
-        print "  Writing file to %s: %s" % (self.storage.name, self.storage.backup_dir())
+        print("  Backup tempfile created: %s (%s)" % (output_file.name, utils.handle_size(output_file)))
+        print("  Writing file to %s: %s" % (self.storage.name, self.storage.backup_dir()))
         self.storage.write_file(output_file)
 
     def get_backup_basename(self):
@@ -92,13 +94,13 @@ class Command(BaseCommand):
         """ Cleanup old backups, keeping the number of backups specified by
         DBBACKUP_CLEANUP_KEEP and any backups that occur on first of the month.
         """
-        print "Cleaning Old Backups for media files"
+        print("Cleaning Old Backups for media files")
 
         file_list = self.get_backup_file_list()
 
         for backup_date, filename in file_list[0:-CLEANUP_KEEP]:
             if int(backup_date.strftime("%d")) != 1:
-                print "  Deleting: %s" % filename
+                print("  Deleting: %s" % filename)
                 self.storage.delete_file(filename)
 
     def get_backup_file_list(self):
