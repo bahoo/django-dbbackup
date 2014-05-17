@@ -48,11 +48,11 @@ class Command(BaseCommand):
             output_file = encrypted_file
 
         print("  Backup tempfile created: %s (%s)" % (output_file.name, utils.handle_size(output_file)))
-        print("  Writing file to %s: %s" % (self.storage.name, self.storage.backup_dir()))
-        self.storage.write_file(output_file)
+        print("  Writing file to %s: %s" % (self.storage.name, self.storage.backup_dir))
+        self.storage.write_file(output_file, self.get_backup_basename())
 
     def get_backup_basename(self):
-        # todo: use DBBACKUP_FILENAME_TEMPLATE
+        # TODO: use DBBACKUP_FILENAME_TEMPLATE
         server_name = self.get_servername()
         if server_name:
             server_name = '-%s' % server_name
@@ -64,6 +64,7 @@ class Command(BaseCommand):
         )
 
     def get_databasename(self):
+        # TODO: WTF is this??
         return settings.DATABASES['default']['NAME']
 
     def create_backup_file(self, source_dir, backup_basename):

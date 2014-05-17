@@ -7,6 +7,7 @@ from __future__ import (absolute_import, division,
 import os
 import tempfile
 import gzip
+import sys
 
 from ... import utils
 from ...dbcommands import DBCommands
@@ -18,6 +19,13 @@ from django.core.management.base import CommandError
 from django.core.management.base import LabelCommand
 from django.db import connection
 from optparse import make_option
+
+
+# Fix Python 2.x.
+try:
+    input = raw_input  # @ReservedAssignment
+except NameError:
+    pass
 
 
 class Command(LabelCommand):
@@ -87,6 +95,10 @@ class Command(LabelCommand):
             inputfile.close()
             inputfile = uncompressed_file
         print("  Restore tempfile created: %s" % utils.handle_size(inputfile))
+        cont = input("Are you sure you want to continue? [Y/n]")
+        if cont.lower() != 'y':
+            print("Quitting")
+            sys.exit(0)
         inputfile.seek(0)
         self.dbcommands.run_restore_commands(inputfile)
 
