@@ -184,15 +184,16 @@ system.
 3.) Include the required settings below.
 
     DBBACKUP_STORAGE = 'dbbackup.storage.filesystem_storage'
-    DBBACKUP_FILESYSTEM_DIRECTORY = '<local_directory_path>'
+    DBBACKUP_BACKUP_DIRECTORY = '<local_directory_path>'
 
 4.) Now you're ready to use the backup management commands.
 
 
 ## Available Settings ##
 
-**DBBACKUP_FILESYSTEM_DIRECTORY (required)** -
-   The directory on your local system you wish to save your backups.
+**DBBACKUP_BACKUP_DIRECTORY (optional)** -
+   The directory on your local system you wish to save your backups. Default:
+   Current working directory.
 
 ------
 
@@ -246,17 +247,7 @@ different user to perform the admin commands dropdb, createdb as a different
 user from the one django uses to connect.  If you need more fine grain control
 you might consider fully customizing the admin commands.
 
-**DBBACKUP_FORCE_ENGINE (optional)** -
-   By default, this app will look at DATABASES['default']['ENGINE'] to determine
-   if you are using MySQL, Postgres, or SQLite.  If you want to skip this check
-   and force the app to use one of the three, set this value to onw of: mysql,
-   postgres, or sqlite.
-
-
 ## MySQL ##
-
-**DBBACKUP_MYSQL_EXTENSION (optional)** -
-   Extension to use for a mysql backup. By default this is 'mysql'.
 
 **DBBACKUP_MYSQL_BACKUP_COMMANDS (optional)** -
    List of commands to use execute when creating a backup. Commands are sent
@@ -274,9 +265,6 @@ you might consider fully customizing the admin commands.
 
 
 ## PostgreSQL ##
-
-**DBBACKUP_POSTGRES_EXTENSION (optional)** -
-   Extension to use for a postgres backup. By default this is 'psql'.
 
 **DBBACKUP_POSTGRES_BACKUP_COMMANDS (optional)** -
    List of commands to use execute when creating a backup. Commands are sent
@@ -297,22 +285,19 @@ you might consider fully customizing the admin commands.
 
 ## SQLite ##
 
-**DBBACKUP_SQLITE_EXTENSION (optional)** -
-   Extension to use for an sqlite backup. By default this is 'sqlite'.
-
 **DBBACKUP_SQLITE_BACKUP_COMMANDS (optional)** -
    List of commands to use execute when creating a backup. Commands are sent to
    popen and should be split into shlex tokens. By default, the following
    command is run:
    
-    [READ_FILE, '{databasename}']
+    ['<READ_FILE>', '{databasename}']
 
 **DBBACKUP_SQLITE_RESTORE_COMMANDS (optional)** -
    List of commands to use execute when restoring a backup. Commands are sent
    to popen and should be split into shlex tokens. By default, the following
    command is run:
    
-    [WRITE_FILE, '{databasename}']
+    ['<WRITE_FILE>', '{databasename}']
 
 ------
 
@@ -326,10 +311,6 @@ or < will pipe the file contents from or to the command respectively.
     {servername}: Optional SERVER_NAME setting in settings.py
     {datetime}: Current datetime string (see DBBACKUP_DATE_FORMAT).
     {extension}: File extension for the current database.
-
-There are also two special commands READ_FILE and WRITE_FILE which take the
-form of a two-item list, the second item being the file to read or write.
-Please see the SQLite settings above for reference.
 
 ------
 

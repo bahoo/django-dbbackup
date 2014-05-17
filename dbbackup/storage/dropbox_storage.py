@@ -1,10 +1,12 @@
 """
 Dropbox API Storage object.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import pickle
 import os
 import tempfile
-import cStringIO
+import io
 from django.conf import settings
 from dropbox import session
 from dropbox.client import DropboxClient
@@ -72,11 +74,11 @@ class Storage(BaseStorage):
     def get_numbered_path(self, path, number):
         return "{0}.{1}".format(path, number)
 
-    def write_file(self, filehandle):
+    def write_file(self, filehandle, filename):
         """ Write the specified file. """
         filehandle.seek(0)
         total_files = 0
-        path = os.path.join(self.DROPBOX_DIRECTORY, filehandle.name)
+        path = os.path.join(self.DROPBOX_DIRECTORY, filename)
         for chunk in self.chunked_file(filehandle):
             self.run_dropbox_action(self.dropbox.put_file,
                 self.get_numbered_path(path, total_files), chunk)
@@ -105,7 +107,7 @@ class Storage(BaseStorage):
         ignore_404 = kwargs.pop("ignore_404", False)
         try:
             response = method(*args, **kwargs)
-        except ErrorResponse, e:
+        except ErrorResponse as e:
             if ignore_404 and e.status == 404:
                 return None
             errmsg = "ERROR %s" % (e,)
@@ -189,7 +191,7 @@ class Storage(BaseStorage):
     def chunked_file(filehandle, chunk_size=FILE_SIZE_LIMIT):
         eof = False
         while not eof:
-            tmpfile = cStringIO.StringIO()
+            tmpfile = io.StringIO()
             chunk_space = chunk_size
             while chunk_space > 0:
                 data = filehandle.read(min(16384, chunk_space))

@@ -1,27 +1,22 @@
 """
 Process the Backup or Restore commands.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import copy
 import os
-import re
+import six
 import shlex
-from datetime import datetime
 from shutil import copyfileobj
 from subprocess import Popen
-from django.conf import settings
 from django.core.management.base import CommandError
 
-READ_FILE = '<READ_FILE>'
-WRITE_FILE = '<WRITE_FILE>'
-DATE_FORMAT = getattr(settings, 'DBBACKUP_DATE_FORMAT', '%Y-%m-%d-%H%M%S')
-SERVER_NAME = getattr(settings, 'DBBACKUP_SERVER_NAME', '')
-FORCE_ENGINE = getattr(settings, 'DBBACKUP_FORCE_ENGINE', '')
-FILENAME_TEMPLATE = getattr(settings, 'DBBACKUP_FILENAME_TEMPLATE', '{databasename}-{servername}-{datetime}.{extension}')
-
+from dbbackup import settings
 
 ##################################
 #  Base Engine Settings
 ##################################
+
 
 class BaseEngineSettings:
     """Base settings for a database engine"""
@@ -34,12 +29,8 @@ class BaseEngineSettings:
         self.database_name = self.database['NAME']
         self.database_host = self.database.get('HOST', '')
         self.database_port = str(self.database.get('PORT', ''))
-        self.EXTENSION = self.get_extension()
         self.BACKUP_COMMANDS = self.get_backup_commands()
         self.RESTORE_COMMANDS = self.get_restore_commands()
-
-    def get_extension(self):
-        raise NotImplementedError("Subclasses must implement get_extensions")
 
     def get_backup_commands(self):
         raise NotImplementedError("Subclasses must implement get_backup_commands")
@@ -47,19 +38,19 @@ class BaseEngineSettings:
     def get_restore_commands(self):
         raise NotImplementedError("Subclasses must implement get_restore_commands")
 
+    def get_env(self):
+        """Extra environment variables to be passed to shell execution"""
+        return {}
+
 
 ##################################
 #  MySQL Settings
 ##################################
-
 class MySQLSettings(BaseEngineSettings):
     """Settings for the MySQL database engine"""
 
-    def get_extension(self):
-        return getattr(settings, 'DBBACKUP_MYSQL_EXTENSION', 'mysql')
-
     def get_backup_commands(self):
-        backup_commands = getattr(settings, 'DBBACKUP_MYSQL_BACKUP_COMMANDS', None)
+        backup_commands = settings.MYSQL_BACKUP_COMMANDS
         if not backup_commands:
             command = 'mysqldump --user={adminuser} --password={password}'
             if self.database_host:
@@ -71,7 +62,7 @@ class MySQLSettings(BaseEngineSettings):
         return backup_commands
 
     def get_restore_commands(self):
-        restore_commands = getattr(settings, 'DBBACKUP_MYSQL_RESTORE_COMMANDS', None)
+        restore_commands = settings.MYSQL_RESTORE_COMMANDS
         if not restore_commands:
             command = 'mysql --user={adminuser} --password={password}'
             if self.database_host:
@@ -90,11 +81,8 @@ class MySQLSettings(BaseEngineSettings):
 class PostgreSQLSettings(BaseEngineSettings):
     """Settings for the PostgreSQL database engine"""
 
-    def get_extension(self):
-        return getattr(settings, 'DBBACKUP_POSTGRESQL_EXTENSION', 'psql')
-
     def get_backup_commands(self):
-        backup_commands = getattr(settings, 'DBBACKUP_POSTGRESQL_BACKUP_COMMANDS', None)
+        backup_commands = settings.POSTGRESQL_BACKUP_COMMANDS
         if not backup_commands:
             command = 'pg_dump --username={adminuser}'
             if self.database_host:
@@ -106,13 +94,18 @@ class PostgreSQLSettings(BaseEngineSettings):
         return backup_commands
 
     def get_restore_commands(self):
-        restore_commands = getattr(settings, 'DBBACKUP_POSTGRESQL_RESTORE_COMMANDS', None)
+        restore_commands = settings.POSTGRESQL_RESTORE_COMMANDS
         if not restore_commands:
             restore_commands = [
                 shlex.split(self.dropdb_command()),
                 shlex.split(self.createdb_command()),
-                shlex.split(self.import_command())
             ]
+            prepare_db_command = self.prepare_db_command()
+            if prepare_db_command:
+                restore_commands.append(shlex.split(prepare_db_command))
+            restore_commands.append(
+                shlex.split(self.import_command())
+            )
         return restore_commands
 
     def dropdb_command(self):
@@ -132,15 +125,39 @@ class PostgreSQLSettings(BaseEngineSettings):
         if self.database_port:
             command = '%s --port={port}' % command
         return '%s {databasename}' % command
+    
+    def prepare_db_command(self):
+        """Use this to run a command after createdb"""
+        return None
 
     def import_command(self):
         """Constructs the PostgreSQL db import command"""
-        command = 'psql --username={adminuser}'
+        command = 'psql -d {databasename} -f - --username={adminuser}'
         if self.database_host:
             command = '%s --host={host}' % command
         if self.database_port:
             command = '%s --port={port}' % command
-        return '%s --single-transaction {databasename} <' % command
+        if settings.POSTGRESQL_RESTORE_SINGLE_TRANSACTION:
+            command += ' --single-transaction '
+        return '%s <' % command
+
+    def get_env(self):
+        """Extra environment variables to be passed to shell execution"""
+        return {'PGPASSWORD': '{password}'}
+
+
+class PostgisSQLSettings(PostgreSQLSettings):
+    """Settings for the PostgreSQL database engine"""
+
+    def prepare_db_command(self):
+        if settings.POSTGIS_SPATIAL_REF:
+            return None
+        command = 'psql --username={adminuser} -c "CREATE EXTENSION postgis;"'
+        if self.database_host:
+            command = '%s --host={host}' % command
+        if self.database_port:
+            command = '%s --port={port}' % command
+        return '%s {databasename}' % command
 
 
 ##################################
@@ -150,18 +167,11 @@ class PostgreSQLSettings(BaseEngineSettings):
 class SQLiteSettings(BaseEngineSettings):
     """Settings for the SQLite database engine"""
 
-    def get_extension(self):
-        return getattr(settings, 'DBBACKUP_SQLITE_EXTENSION', 'sqlite')
-
     def get_backup_commands(self):
-        return getattr(settings, 'DBBACKUP_SQLITE_BACKUP_COMMANDS', [
-            [READ_FILE, '{databasename}'],
-        ])
+        return settings.SQLITE_BACKUP_COMMANDS
 
     def get_restore_commands(self):
-        return getattr(settings, 'DBBACKUP_SQLITE_RESTORE_COMMANDS', [
-            [WRITE_FILE, '{databasename}'],
-        ])
+        return settings.SQLITE_RESTORE_COMMANDS
 
 
 ##################################
@@ -173,62 +183,40 @@ class DBCommands:
 
     def __init__(self, database):
         self.database = database
-        self.engine = FORCE_ENGINE or self.database['ENGINE'].split('.')[-1]
+        self.engine = self.database['ENGINE'].split('.')[-1]
         self.settings = self._get_settings()
 
     def _get_settings(self):
         """ Returns the proper settings dictionary. """
         if any(e in self.engine for e in ['mysql']):
             return MySQLSettings(self.database)
-        elif any(e in self.engine for e in ['postgres', 'postgis']):
+        elif any(e in self.engine for e in ['postgis']):
+            return PostgisSQLSettings(self.database)
+        elif any(e in self.engine for e in ['postgres']):
             return PostgreSQLSettings(self.database)
         elif any(e in self.engine for e in ['sqlite']):
             return SQLiteSettings(self.database)
 
     def _clean_passwd(self, instr):
         return instr.replace(self.database['PASSWORD'], '******')
-
-    def filename(self, servername=None, wildcard=None):
-        """ Create a new backup filename. """
-        params = {
-            'databasename': self.database['NAME'].replace("/", "_"),
-            'servername': servername or SERVER_NAME,
-            'timestamp': datetime.now(),
-            'extension': self.settings.EXTENSION,
-            'wildcard': wildcard,
-        }
-        if callable(FILENAME_TEMPLATE):
-            filename = FILENAME_TEMPLATE(**params)
-        else:
-            params['datetime'] = wildcard or params['timestamp'].strftime(DATE_FORMAT)
-            # if Python 2.6 is okay, this line can replace the 4 below it:
-            # filename = FILENAME_TEMPLATE.format(**params)
-            filename = FILENAME_TEMPLATE
-            for key, value in params.iteritems():
-                filename = filename.replace('{%s}' % key, unicode(value))
-            filename = filename.replace('--', '-')
-        return filename
-
-    def filename_match(self, servername=None, wildcard='*'):
-        """ Return the prefix for backup filenames. """
-        return self.filename(servername, wildcard)
-
-    def filter_filepaths(self, filepaths, servername=None):
-        """ Returns a list of backups file paths from the dropbox entries. """
-        regex = r'[\^\%s]%s' % (os.sep, self.filename_match(servername, '.*?'))
-        filepaths = filter(lambda path: re.search(regex, path), filepaths)
-        return filepaths
-
+    
     def translate_command(self, command):
-        """ Translate the specified command. """
+        """ Translate the specified command or string. """
+        def replace(s):
+            s = (
+                s.replace('{username}', self.database['USER'])
+                 .replace('{adminuser}', self.database.get('ADMINUSER', self.database['USER']))
+                 .replace('{password}', self.database['PASSWORD'])
+                 .replace('{databasename}', self.database['NAME'])
+                 .replace('{host}', self.database['HOST'])
+                 .replace('{port}', str(self.database['PORT']))
+             )
+            return s
+        if isinstance(command, six.string_types):
+            return replace(command)
         command = copy.copy(command)
         for i in range(len(command)):
-            command[i] = command[i].replace('{adminuser}', self.database.get('ADMINUSER', self.database['USER']))
-            command[i] = command[i].replace('{username}', self.database['USER'])
-            command[i] = command[i].replace('{password}', self.database['PASSWORD'])
-            command[i] = command[i].replace('{databasename}', self.database['NAME'])
-            command[i] = command[i].replace('{host}', self.database['HOST'])
-            command[i] = command[i].replace('{port}', str(self.database['PORT']))
+            command[i] = replace(command[i])
         return command
 
     def run_backup_commands(self, stdout):
@@ -244,9 +232,9 @@ class DBCommands:
         """ Translate and run the specified commands. """
         for command in commands:
             command = self.translate_command(command)
-            if (command[0] == READ_FILE):
+            if (command[0] == settings.READ_FILE):
                 self.read_file(command[1], stdout)
-            elif (command[0] == WRITE_FILE):
+            elif (command[0] == settings.WRITE_FILE):
                 self.write_file(command[1], stdin)
             else:
                 self.run_command(command, stdin, stdout)
@@ -256,9 +244,15 @@ class DBCommands:
         devnull = open(os.devnull, 'w')
         pstdin = stdin if command[-1] == '<' else None
         pstdout = stdout if command[-1] == '>' else devnull
-        command = filter(lambda arg: arg not in ['<', '>'], command)
-        print self._clean_passwd("  Running: %s" % ' '.join(command))
-        process = Popen(command, stdin=pstdin, stdout=pstdout)
+        command = [arg for arg in command if arg not in ['<', '>']]
+        print(self._clean_passwd("  Running: %s" % ' '.join(command)))
+        env = self.settings.get_env()
+        env.update(settings.BACKUP_ENVIRONMENT)
+        for k, v in env.items():
+            env[k] = self.translate_command(v)
+        updated_osenv = os.environ.copy()
+        updated_osenv.update(env)
+        process = Popen(command, stdin=pstdin, stdout=pstdout, env=updated_osenv)
         process.wait()
         devnull.close()
         if process.poll():
@@ -266,12 +260,12 @@ class DBCommands:
 
     def read_file(self, filepath, stdout):
         """ Read the specified file to stdout. """
-        print "  Reading: %s" % filepath
+        print("  Reading: %s" % filepath)
         with open(filepath, "rb") as f:
             copyfileobj(f, stdout)
 
     def write_file(self, filepath, stdin):
         """ Write the specified file from stdin. """
-        print "  Writing: %s" % filepath
+        print("  Writing: %s" % filepath)
         with open(filepath, 'wb') as f:
             copyfileobj(stdin, f)

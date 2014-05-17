@@ -27,7 +27,7 @@ setup(
     long_description=read('README.md'),
     author='Michael Shepanski',
     author_email='mjs7231@gmail.com',
-    install_requires=['boto', 'dropbox'],
+    install_requires=[],
     license='BSD',
     url='http://bitbucket.org/mjs7231/django-dbbackup',
     keywords=['django', 'dropbox', 'database', 'backup', 'amazon', 's3'],

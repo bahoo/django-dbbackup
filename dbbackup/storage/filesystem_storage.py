@@ -1,9 +1,12 @@
 """
 Filesystem Storage object.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import os
 from .base import BaseStorage, StorageError
-from django.conf import settings
+
+from dbbackup import settings
 
 
 ################################
@@ -12,7 +15,6 @@ from django.conf import settings
 
 class Storage(BaseStorage):
     """ Filesystem API Storage. """
-    BACKUP_DIRECTORY = getattr(settings, 'DBBACKUP_FILESYSTEM_DIRECTORY', None)
 
     def __init__(self, server_name=None):
         self._check_filesystem_errors()
@@ -21,15 +23,16 @@ class Storage(BaseStorage):
 
     def _check_filesystem_errors(self):
         """ Check we have all the required settings defined. """
-        if not self.BACKUP_DIRECTORY:
-            raise StorageError('Filesystem storage requires DBBACKUP_FILESYSTEM_DIRECTORY to be defined in settings.')
+        if not self.backup_dir:
+            raise StorageError('Filesystem storage requires DBBACKUP_BACKUP_DIRECTORY to be defined in settings.')
 
     ###################################
     #  DBBackup Storage Methods
     ###################################
-
+    
+    @property
     def backup_dir(self):
-        return self.BACKUP_DIRECTORY
+        return settings.BACKUP_DIRECTORY
 
     def delete_file(self, filepath):
         """ Delete the specified filepath. """
@@ -37,15 +40,15 @@ class Storage(BaseStorage):
 
     def list_directory(self):
         """ List all stored backups for the specified. """
-        filepaths = os.listdir(self.BACKUP_DIRECTORY)
-        filepaths = [os.path.join(self.BACKUP_DIRECTORY, path) for path in filepaths]
+        filepaths = os.listdir(self.backup_dir)
+        filepaths = [os.path.join(self.backup_dir, path) for path in filepaths]
         return sorted(filter(os.path.isfile, filepaths))
 
-    def write_file(self, filehandle):
+    def write_file(self, filehandle, filename):
         """ Write the specified file. """
         filehandle.seek(0)
-        backuppath = os.path.join(self.BACKUP_DIRECTORY, filehandle.name)
-        backupfile = open(backuppath, 'w')
+        backuppath = os.path.join(self.backup_dir, filename)
+        backupfile = open(backuppath, 'wb')
         data = filehandle.read(1024)
         while data:
             backupfile.write(data)
@@ -54,4 +57,4 @@ class Storage(BaseStorage):
 
     def read_file(self, filepath):
         """ Read the specified file and return it's handle. """
-        return open(filepath, 'r')
+        return open(filepath, 'rb')
