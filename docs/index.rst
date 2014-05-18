@@ -1,9 +1,6 @@
-.. django-dbbackup documentation master file, created by
-   sphinx-quickstart on Sun May 18 13:35:53 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. building docs: cd django-dbbackup/docs && make html
 
-Welcome to django-dbbackup's documentation!
+Getting started
 ===========================================
 
 Contents:
@@ -13,10 +10,11 @@ Contents:
 
    installation
    configuration
-   dropbox
-   s3
-   ftp
-   local storage
+   storage
+
+.. warning::
+   django-dbbackup is currently under heavy refactoring, stay tuned for
+   new versions and a final 2.0 release.
    
 Management Commands
 -------------------
@@ -30,7 +28,7 @@ in the backup filename.
 
 ::
 
-    dbbackup [-s <servername>] [-d <database>] [--clean] [--compress] [--encrypt]
+    dbbackup [-s <servername>] [-d <database>] [--clean] [--compress] [--encrypt] [--backup-extension <file-extension>]
 
 dbrestore
 ~~~~~~~~~
@@ -43,7 +41,7 @@ backup from.
 
 ::
 
-    dbrestore [-d <database>] [-s <servername>] [-f <localfile>]
+    dbrestore [-d <database>] [-s <servername>] [-f <localfile>] [--uncompress] [--backup-extension <file-extension>]
 
 mediabackup
 ~~~~~~~~~~~~
@@ -53,6 +51,64 @@ the MEDIA_ROOT. Optionally you can set the DBBACKUP_MEDIA_PATH setting.
 ::
 
     mediabackup [--encrypt] [--clean] [--servername <servername>]
+
+Examples
+--------
+
+If you run dbbackup out of the box, it will be able to create and restore from a
+local file dump of your database as configured in your Django project's setup.
+
+Here's how we create a simple dump of the database:
+
+::
+
+    $ python manage.py dbbackup
+    
+    Backing Up Database: /home/user/django-project/db.sqlite3
+      Reading: /home/user/django-project/db.sqlite3
+      Backup tempfile created: 38.0 KB
+      Writing file to Filesystem: /home/user/django-project/, filename: default.backup
+
+
+...and here's how we load that dump again (WARNING! Doing that of course overwrites the
+entire existing database)
+
+::
+
+    $ python manage.py dbrestore 
+    
+    Restoring backup for database: /home/user/django-project/db.sqlite3
+      Finding latest backup
+      Restoring: /home/user/django-project/default.backup
+      Restore tempfile created: 38.0 KB
+    Are you sure you want to continue? [Y/n]y
+      Writing: /home/user/django-project/db.sqlite3
+
+
+Now, databases are not the only thing you should remember to backup. Your
+``settings.MEDIA_ROOT`` is where user contributed uploads reside, and it
+should also be backed up.
+
+::
+
+    $ python manage.py mediabackup
+    
+    Backing up media files
+      Backup tempfile created: None (233.0 B)
+      Writing file to Filesystem: /home/user/django-project/
+
+
+Other Resources
+===============
+
+Source code here:
+
+https://bitbucket.org/mjs7231/django-dbbackup/
+
+PyPi project:
+
+https://pypi.python.org/pypi/django-dbbackup/
+
 
 
 Indices and tables

@@ -1,6 +1,7 @@
 from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
 import os
+import sys
 from datetime import datetime
 import tarfile
 import tempfile
@@ -40,8 +41,12 @@ class Command(BaseCommand):
             raise CommandError(err)
 
     def backup_mediafiles(self, encrypt):
+        source_dir = self.get_source_dir()
+        if not source_dir:
+            print("No media source dir configured.")
+            sys.exit(0)
         print("Backing up media files")
-        output_file = self.create_backup_file(self.get_source_dir(), self.get_backup_basename())
+        output_file = self.create_backup_file(source_dir, self.get_backup_basename())
 
         if encrypt:
             encrypted_file = utils.encrypt_file(output_file)
@@ -78,7 +83,7 @@ class Command(BaseCommand):
                 finally:
                     tar_file.close()
 
-                return utils.create_spooled_temporary_file(backup_filename, backup_basename)
+                return utils.create_spooled_temporary_file(backup_filename)
             finally:
                 if os.path.exists(backup_filename):
                     os.remove(backup_filename)
