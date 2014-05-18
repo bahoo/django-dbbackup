@@ -9,3 +9,4 @@ static/cache/*
 dist/*
 MANIFEST*
 *.komodoproject
+docs/_build

@@ -1,0 +1,57 @@
+Storing backups on Amazon S3
+============================
+
+In order to backup to Amazon S3, you'll first need to create an Amazon
+Webservices Account and setup your Amazon S3 bucket. Once that is
+complete, you can follow the required setup below.
+
+Setup Your Django Project
+-------------------------
+
+1.) Install django-dbbackup and the required boto dependancy:
+
+::
+
+    cd django-dbbackup
+    python setup.py install
+    pip install boto
+
+2.) Add 'dbbackup' to INSTALLED\_APPS in your settings.py file.
+
+3.) Include the required settings below.
+
+::
+
+    DBBACKUP_STORAGE = 'dbbackup.storage.s3_storage'
+    DBBACKUP_S3_BUCKET = '<amazon_bucket_name>'
+    DBBACKUP_S3_ACCESS_KEY = '<amazon_access_key>'
+    DBBACKUP_S3_SECRET_KEY = '<amazon_secret_key>'
+
+4.) Now you're ready to use the backup management commands.
+
+Available Settings
+------------------
+
+**DBBACKUP\_S3\_BUCKET (required)** - The name of the Amazon S3 bucket
+to store your backups. This directory must exist before attempting to
+create your first backup.
+
+**DBBACKUP\_S3\_ACCESS\_KEY (required)** - Your Amazon Account Access
+Key. This can be found on your Amazon Account Security Credentials page.
+Note: Do not share this key with anyone you do not trust with access to
+your Amazon files.
+
+**DBBACKUP\_S3\_SECRET\_KEY (required)** - Your Amazon Account Secret
+Key. This can be found in the same location as your Access Key above.
+
+**DBBACKUP\_S3\_DIRECTORY (optional)** - The directory in your Amazon S3
+bucket you wish to save your backups. By default this is set to
+'django-dbbackups/'.
+
+**DBBACKUP\_S3\_DOMAIN (optional)** - Specify the Amazon domain to use
+when transferring the generated backup files. For example, this can be
+set to 's3-eu-west-1.amazonaws.com'. By default, this is
+'s3.amazonaws.com'.
+
+**DBBACKUP\_S3\_IS\_SECURE (optional)** - Set False to disable using
+SSL. Default is True.
