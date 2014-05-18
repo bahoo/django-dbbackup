@@ -96,6 +96,7 @@ def encrypt_file(inputfile):
 def create_spooled_temporary_file(filepath):
     """ Create a spooled temporary file.
         - filepath: path of input file
+        - filename: file of the spooled temporary file
     """
     spooled_file = tempfile.SpooledTemporaryFile(max_size=500 * 1024 * 1024)
     tmpfile = open(filepath, 'r+b')
