@@ -84,7 +84,7 @@ def encrypt_file(inputfile):
                 recipients=settings.DBBACKUP_GPG_RECIPIENT, always_trust=always_trust)
             inputfile.close()
             if not result:
-                raise Exception('Encryption failed; status: %s' % result.status)
+                raise Exception('Encryption failed; stderr: %s' % result.stderr)
             return create_spooled_temporary_file(filepath, inputfile.name + '.gpg')
         finally:
             if os.path.exists(filepath):
