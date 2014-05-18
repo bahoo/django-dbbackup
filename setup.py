@@ -1,6 +1,7 @@
 import os
 from distutils.core import setup
 
+from dbbackup import VERSION
 
 def get_path(fname):
     return os.path.join(os.path.dirname(__file__), fname)
@@ -44,7 +45,7 @@ def get_requirements():
 
 setup(
     name='django-dbbackup',
-    version='1.9.0',
+    version=VERSION,
     description='Management commands to help backup and restore a project database to AmazonS3, Dropbox or local disk.',
     long_description=read('README.md'),
     author='Michael Shepanski',
