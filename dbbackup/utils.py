@@ -6,12 +6,13 @@ from __future__ import (absolute_import, division,
 import sys
 import os
 import tempfile
-from django.conf import settings
 from django.core.mail import EmailMessage
 from django.db import connection
 from django.http import HttpRequest
 from django.views.debug import ExceptionReporter
 from functools import wraps
+
+from dbbackup import settings
 
 FAKE_HTTP_REQUEST = HttpRequest()
 FAKE_HTTP_REQUEST.META['SERVER_NAME'] = ''
@@ -52,14 +53,14 @@ def email_uncaught_exception(func):
         try:
             func(*args, **kwargs)
         except:
-            if getattr(settings, 'DBBACKUP_SEND_EMAIL', True):
+            if settings.SEND_EMAIL:
                 excType, excValue, traceback = sys.exc_info()
                 reporter = ExceptionReporter(FAKE_HTTP_REQUEST, excType, 
                     excValue, traceback.tb_next)
                 subject = 'Cron: Uncaught exception running %s' % module
                 body = reporter.get_traceback_html()
                 msgFrom = settings.SERVER_EMAIL
-                msgTo = [admin[1] for admin in settings.ADMINS]
+                msgTo = [admin[1] for admin in settings.FAILURE_RECIPIENTS]
                 message = EmailMessage(subject, body, msgFrom, msgTo)
                 message.content_subtype = 'html'
                 message.send(fail_silently=True)
@@ -78,10 +79,10 @@ def encrypt_file(inputfile):
         filepath = os.path.join(tempdir, filename)
         try:
             inputfile.seek(0)
-            always_trust = getattr(settings, 'DBBACKUP_GPG_ALWAYS_TRUST', False)
+            always_trust = settings.GPG_ALWAYS_TRUST
             g = gnupg.GPG()
             result = g.encrypt_file(inputfile, output=filepath,
-                recipients=settings.DBBACKUP_GPG_RECIPIENT, always_trust=always_trust)
+                recipients=settings.GPG_RECIPIENT, always_trust=always_trust)
             inputfile.close()
             if not result:
                 raise Exception('Encryption failed; status: %s' % result.status)

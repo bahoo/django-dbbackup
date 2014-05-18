@@ -45,7 +45,7 @@ class Command(BaseCommand):
         if not source_dir:
             print("No media source dir configured.")
             sys.exit(0)
-        print("Backing up media files")
+        print("Backing up media files in %s" % source_dir)
         output_file = self.create_backup_file(source_dir, self.get_backup_basename())
 
         if encrypt:

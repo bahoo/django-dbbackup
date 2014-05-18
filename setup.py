@@ -2,9 +2,11 @@ import os
 from distutils.core import setup
 
 
+def get_path(fname):
+    return os.path.join(os.path.dirname(__file__), fname)
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 
 packages = []
 package_dir = "dbbackup"
@@ -31,6 +33,15 @@ except (IOError, ImportError):
     # No long description... but nevermind, it's only for PyPi uploads.
     long_description = ""
 
+
+def get_requirements():
+    try:
+        import importlib  # @UnusedImport
+    except ImportError:
+        return ['importlib']
+    return []
+
+
 setup(
     name='django-dbbackup',
     version='1.9.0',
@@ -38,7 +49,7 @@ setup(
     long_description=read('README.md'),
     author='Michael Shepanski',
     author_email='mjs7231@gmail.com',
-    install_requires=[],
+    install_requires=get_requirements(),
     license='BSD',
     url='http://bitbucket.org/mjs7231/django-dbbackup',
     keywords=['django', 'dropbox', 'database', 'backup', 'amazon', 's3'],
