@@ -43,11 +43,29 @@ master_doc = 'index'
 project = u'django-dbbackup'
 copyright = u'2014, Michael Shepanski'
 
+path = os.path.join(
+    os.path.split(
+        os.path.abspath(
+            os.path.dirname(__file__)
+        )
+    )[:-1]
+)[0]
+
+sys.path = [path] + sys.path
+sys.path = [os.path.join(path, 'dbbackup')] + sys.path
+
+import dbbackup
+
+print(dbbackup.__file__)
+
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
+
+# TODO: Import version number directly from the APP
+
 version = '1.9.0'
 # The full version, including alpha/beta/rc tags.
 release = '1.9.0'
@@ -92,6 +110,13 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = 'default'
+
+
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
+    html_theme = 'default'
+else:
+    html_theme = 'nature'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

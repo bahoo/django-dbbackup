@@ -70,7 +70,7 @@ class Command(LabelCommand):
             encrypted_file = utils.encrypt_file(outputfile)
             outputfile = encrypted_file
         print("  Backup tempfile created: %s" % (utils.handle_size(outputfile)))
-        print("  Writing file to %s: /%s, filename: %s" % (self.storage.name, self.storage.backup_dir, filename))
+        print("  Writing file to %s: %s, filename: %s" % (self.storage.name, self.storage.backup_dir, filename))
         self.storage.write_file(outputfile, filename)
 
     def cleanup_old_backups(self, database):
