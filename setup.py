@@ -19,6 +19,17 @@ for dirpath, dirnames, filenames in os.walk(package_dir):
             pkg = pkg.replace(os.path.altsep, '.')
         packages.append(pkg)
 
+try:
+    import pypandoc
+    long_description = pypandoc.convert(get_path('README.md'), 'rst')
+    long_description = long_description.split(
+        '<!---Illegal PyPi RST data -->')[0]
+    f = open(get_path('README.rst'), 'w')
+    f.write(long_description)
+    f.close()
+except (IOError, ImportError):
+    # No long description... but nevermind, it's only for PyPi uploads.
+    long_description = ""
 
 setup(
     name='django-dbbackup',
