@@ -125,7 +125,7 @@ class PostgreSQLSettings(BaseEngineSettings):
         if self.database_port:
             command = '%s --port={port}' % command
         return '%s {databasename}' % command
-    
+
     def prepare_db_command(self):
         """Use this to run a command after createdb"""
         return None
@@ -183,7 +183,7 @@ class DBCommands:
 
     def __init__(self, database):
         self.database = database
-        self.engine = self.database['ENGINE'].split('.')[-1]
+        self.engine = settings.FORCE_ENGINE or self.database['ENGINE'].split('.')[-1]
         self.settings = self._get_settings()
 
     def _get_settings(self):
@@ -199,7 +199,7 @@ class DBCommands:
 
     def _clean_passwd(self, instr):
         return instr.replace(self.database['PASSWORD'], '******')
-    
+
     def translate_command(self, command):
         """ Translate the specified command or string. """
         def replace(s):
