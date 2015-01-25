@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division,
 import os
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
-from io import StringIO
+from io import BytesIO
 from django.conf import settings
 from tempfile import SpooledTemporaryFile
 from .base import BaseStorage, StorageError
@@ -60,7 +60,7 @@ class Storage(BaseStorage):
                 chunkdata = filehandle.read(5 * 1024 * 1024)
                 if not chunkdata:
                     break
-                tmpfile = StringIO(chunkdata)
+                tmpfile = BytesIO(chunkdata)
                 tmpfile.seek(0)
                 handle.upload_part_from_file(tmpfile, chunk)
                 tmpfile.close()

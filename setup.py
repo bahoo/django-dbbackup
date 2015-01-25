@@ -36,11 +36,17 @@ except (IOError, ImportError):
 
 
 def get_requirements():
+    requirements = []
     try:
         import importlib  # @UnusedImport
     except ImportError:
-        return ['importlib']
-    return []
+        requirements.append('importlib')
+    try:
+        import pysftp  # @UnusedImport
+    except ImportError:
+        requirements.append('pysftp')
+
+    return requirements
 
 
 setup(

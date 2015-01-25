@@ -90,7 +90,7 @@ class Storage(BaseStorage):
         filehandle = tempfile.SpooledTemporaryFile(max_size=MAX_SPOOLED_SIZE)
         try:
             while True:
-                response = self.run_dropbox_action(self.dropbox.get_file, 
+                response = self.run_dropbox_action(self.dropbox.get_file,
                     self.get_numbered_path(filepath, total_files),
                     ignore_404=(total_files > 0))
                 if not response:
@@ -191,7 +191,7 @@ class Storage(BaseStorage):
     def chunked_file(filehandle, chunk_size=FILE_SIZE_LIMIT):
         eof = False
         while not eof:
-            tmpfile = io.StringIO()
+            tmpfile = io.BytesIO()
             chunk_space = chunk_size
             while chunk_space > 0:
                 data = filehandle.read(min(16384, chunk_space))
