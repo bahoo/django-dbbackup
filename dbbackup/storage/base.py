@@ -2,7 +2,8 @@
 Abstract Storage class.
 """
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
+
 
 class StorageError(Exception):
     pass
@@ -14,7 +15,7 @@ class StorageError(Exception):
 
 class BaseStorage:
     """ Abstract storage class. """
-    BACKUP_STORAGE = getattr(settings, 'DBBACKUP_STORAGE', None)
+    BACKUP_STORAGE = getattr(settings, 'DBBACKUP_STORAGE', 'dbbackup.storage.filesystem_storage')
 
     def __init__(self, server_name=None):
         if not self.name:
@@ -48,7 +49,7 @@ class BaseStorage:
     def list_backups(self, database):
         raise StorageError("Programming Error: list_backups() not defined.")
 
-    def write_file(self, filehandle):
+    def write_file(self, filehandle, filename):
         raise StorageError("Programming Error: write_file() not defined.")
 
     def read_file(self, filepath):

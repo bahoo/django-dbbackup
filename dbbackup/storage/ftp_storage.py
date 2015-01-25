@@ -1,6 +1,8 @@
 """
 FTP Storage object.
 """
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 import pickle
 import os
 import tempfile
@@ -53,10 +55,10 @@ class Storage(BaseStorage):
         """ List all stored backups for the specified. """
         return sorted(self.ftp.nlst(self.FTP_PATH))
 
-    def write_file(self, filehandle):
+    def write_file(self, filehandle, filename):
         """ Write the specified file. """
         filehandle.seek(0)
-        backuppath = os.path.join(self.FTP_PATH, filehandle.name)
+        backuppath = os.path.join(self.FTP_PATH, filename)
         self.ftp.storbinary('STOR ' + backuppath, filehandle)
 
     def read_file(self, filepath):
