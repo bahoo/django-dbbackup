@@ -60,7 +60,7 @@ class Command(LabelCommand):
         print("Backing Up Database: %s" % database['NAME'])
         filename = database_name + ".backup"
         outputfile = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
-        # outputfile.name = self.dbcommands.filename(self.servername)
+        outputfile.name = self.dbcommands.filename(self.servername)
         self.dbcommands.run_backup_commands(outputfile)
         if self.compress:
             compressed_file = self.compress_file(outputfile)
