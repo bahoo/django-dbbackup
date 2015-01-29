@@ -10,7 +10,7 @@ import shlex
 from shutil import copyfileobj
 from subprocess import Popen
 from django.core.management.base import CommandError
-
+from django.utils import timezone
 from dbbackup import settings
 
 ##################################
@@ -31,6 +31,7 @@ class BaseEngineSettings:
         self.database_port = str(self.database.get('PORT', ''))
         self.BACKUP_COMMANDS = self.get_backup_commands()
         self.RESTORE_COMMANDS = self.get_restore_commands()
+        self.extension = "backup"
 
     def get_backup_commands(self):
         raise NotImplementedError("Subclasses must implement get_backup_commands")
@@ -218,6 +219,27 @@ class DBCommands:
         for i in range(len(command)):
             command[i] = replace(command[i])
         return command
+
+    def filename(self, servername=None, wildcard=None):
+        """ Create a new backup filename. """
+        params = {
+            'databasename': self.database['NAME'].replace("/", "_"),
+            'servername': servername or settings.SERVER_NAME,
+            'timestamp': timezone.now(),
+            'extension': self.settings.extension,
+            'wildcard': wildcard,
+        }
+        if callable(settings.FILENAME_TEMPLATE):
+            filename = settings.FILENAME_TEMPLATE(**params)
+        else:
+            params['datetime'] = wildcard or params['timestamp'].strftime(settings.DATE_FORMAT)
+            # if Python 2.6 is okay, this line can replace the 4 below it:
+            # filename = FILENAME_TEMPLATE.format(**params)
+            filename = settings.FILENAME_TEMPLATE
+            for key, value in params.iteritems():
+                filename = filename.replace('{%s}' % key, unicode(value))
+            filename = filename.replace('--', '-')
+        return filename
 
     def run_backup_commands(self, stdout):
         """ Translate and run the backup commands. """

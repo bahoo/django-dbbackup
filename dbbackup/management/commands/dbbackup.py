@@ -25,7 +25,7 @@ class Command(LabelCommand):
     option_list = BaseCommand.option_list + (
         make_option("-c", "--clean", help="Clean up old backup files", action="store_true", default=False),
         make_option("-d", "--database", help="Database to backup (default: everything)"),
-        make_option("-x", "--backup-extension", help="The extension to use when saving backups."),
+        # make_option("-x", "--backup-extension", help="The extension to use when saving backups."),
         make_option("-s", "--servername", help="Specify server name to include in backup filename"),
         make_option("-z", "--compress", help="Compress the backup files", action="store_true", default=False),
         make_option("-e", "--encrypt", help="Encrypt the backup files", action="store_true", default=False),
@@ -39,7 +39,8 @@ class Command(LabelCommand):
             self.clean_keep = getattr(settings, 'DBBACKUP_CLEANUP_KEEP', 10)
             self.database = options.get('database')
             self.servername = options.get('servername')
-            self.backup_extension = options.get('backup-extension') or 'backup'
+            # Currently not used
+            # self.backup_extension = options.get('backup-extension') or 'backup'
             self.compress = options.get('compress')
             self.encrypt = options.get('encrypt')
             self.storage = BaseStorage.storage_factory()
@@ -58,9 +59,8 @@ class Command(LabelCommand):
     def save_new_backup(self, database, database_name):
         """ Save a new backup file. """
         print("Backing Up Database: %s" % database['NAME'])
-        filename = database_name + ".backup"
+        filename = self.dbcommands.filename(self.servername)
         outputfile = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
-        outputfile.name = self.dbcommands.filename(self.servername)
         self.dbcommands.run_backup_commands(outputfile)
         if self.compress:
             compressed_file = self.compress_file(outputfile)
