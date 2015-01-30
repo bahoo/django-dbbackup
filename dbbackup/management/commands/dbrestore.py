@@ -85,7 +85,6 @@ class Command(LabelCommand):
         input_filename = self.filepath
         inputfile = self.storage.read_file(input_filename)
         if self.decrypt:
-            raise
             unencrypted_file = self.unencrypt_file(inputfile)
             inputfile.close()
             inputfile = unencrypted_file
